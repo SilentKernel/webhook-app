@@ -1,0 +1,19 @@
+class Organization < ApplicationRecord
+  has_many :memberships, dependent: :destroy
+  has_many :users, through: :memberships
+  has_many :invitations, dependent: :destroy
+
+  validates :name, presence: true
+
+  def owner
+    memberships.find_by(role: :owner)&.user
+  end
+
+  def owners
+    users.joins(:memberships).where(memberships: { role: :owner })
+  end
+
+  def admins
+    users.joins(:memberships).where(memberships: { role: [:admin, :owner] })
+  end
+end

@@ -1,0 +1,142 @@
+<% content_for(:title) { "Team - #{current_organization.name}" } %>
+
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold">Team</h1>
+      <p class="text-base-content/60 mt-1">Manage your organization's team members</p>
+    </div>
+    <% if admin_or_owner? %>
+      <%= link_to invite_team_index_path, class: "btn btn-primary" do %>
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+        </svg>
+        Invite Member
+      <% end %>
+    <% end %>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Members (<%= @memberships.count %>)</h2>
+      <div class="overflow-x-auto">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Email</th>
+              <th>Role</th>
+              <th>Joined</th>
+              <% if admin_or_owner? %>
+                <th>Actions</th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% @memberships.each do |membership| %>
+              <%= turbo_frame_tag membership do %>
+                <tr>
+                  <td>
+                    <div class="flex items-center gap-3">
+                      <div class="avatar placeholder">
+                        <div class="bg-neutral text-neutral-content w-10 rounded-full">
+                          <span><%= membership.user.first_name[0] %><%= membership.user.last_name[0] %></span>
+                        </div>
+                      </div>
+                      <div>
+                        <div class="font-bold"><%= membership.user.full_name %></div>
+                        <% if membership.user == current_user %>
+                          <span class="badge badge-ghost badge-sm">You</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </td>
+                  <td><%= membership.user.email %></td>
+                  <td>
+                    <% badge_class = case membership.role
+                      when "owner" then "badge-primary"
+                      when "admin" then "badge-secondary"
+                      else "badge-ghost"
+                    end %>
+                    <span class="badge <%= badge_class %>"><%= membership.role.capitalize %></span>
+                  </td>
+                  <td><%= membership.created_at.strftime("%b %d, %Y") %></td>
+                  <% if admin_or_owner? %>
+                    <td>
+                      <% unless membership.owner? || membership.user == current_user %>
+                        <div class="dropdown dropdown-end">
+                          <div tabindex="0" role="button" class="btn btn-ghost btn-sm">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                            </svg>
+                          </div>
+                          <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+                            <% if owner? %>
+                              <li class="menu-title"><span>Change Role</span></li>
+                              <% if membership.member? %>
+                                <li>
+                                  <%= button_to "Make Admin", role_team_path(membership, role: "admin"), method: :patch, class: "text-left" %>
+                                </li>
+                              <% else %>
+                                <li>
+                                  <%= button_to "Make Member", role_team_path(membership, role: "member"), method: :patch, class: "text-left" %>
+                                </li>
+                              <% end %>
+                              <li class="divider"></li>
+                            <% end %>
+                            <li>
+                              <%= button_to team_path(membership), method: :delete, data: { turbo_confirm: "Are you sure you want to remove #{membership.user.full_name} from the team?" }, class: "text-error text-left" do %>
+                                Remove from Team
+                              <% end %>
+                            </li>
+                          </ul>
+                        </div>
+                      <% end %>
+                    </td>
+                  <% end %>
+                </tr>
+              <% end %>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <% if admin_or_owner? && @pending_invitations.any? %>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Pending Invitations (<%= @pending_invitations.count %>)</h2>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Role</th>
+                <th>Invited By</th>
+                <th>Expires</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @pending_invitations.each do |invitation| %>
+                <tr>
+                  <td><%= invitation.email %></td>
+                  <td>
+                    <span class="badge badge-outline"><%= invitation.role.capitalize %></span>
+                  </td>
+                  <td><%= invitation.invited_by&.full_name || "Unknown" %></td>
+                  <td>
+                    <% days_left = ((invitation.expires_at - Time.current) / 1.day).ceil %>
+                    <span class="text-base-content/60">
+                      <%= pluralize(days_left, "day") %> left
+                    </span>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

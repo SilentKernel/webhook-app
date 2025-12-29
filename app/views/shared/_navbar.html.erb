@@ -1,0 +1,43 @@
+<div class="navbar bg-base-100 shadow-lg">
+  <div class="flex-1">
+    <a href="<%= dashboard_path %>" class="btn btn-ghost text-xl">Webhook App</a>
+    <% if current_organization %>
+      <div class="badge badge-outline ml-2"><%= current_organization.name %></div>
+    <% end %>
+  </div>
+  <div class="flex-none gap-2">
+    <ul class="menu menu-horizontal px-1">
+      <li><a href="<%= dashboard_path %>">Dashboard</a></li>
+      <li><a href="<%= team_index_path %>">Team</a></li>
+      <% if owner? %>
+        <li><a href="<%= settings_path %>">Settings</a></li>
+      <% end %>
+    </ul>
+    <div class="dropdown dropdown-end">
+      <div tabindex="0" role="button" class="btn btn-ghost">
+        <div class="flex items-center gap-2">
+          <div class="avatar placeholder">
+            <div class="bg-neutral text-neutral-content w-8 rounded-full">
+              <span class="text-xs"><%= current_user.first_name[0] %><%= current_user.last_name[0] %></span>
+            </div>
+          </div>
+          <span class="hidden md:inline"><%= current_user.full_name %></span>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </div>
+      </div>
+      <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow">
+        <li class="menu-title"><span><%= current_user.email %></span></li>
+        <li>
+          <%= link_to edit_user_registration_path do %>
+            Profile Settings
+          <% end %>
+        </li>
+        <li>
+          <%= button_to "Logout", destroy_user_session_path, method: :delete, class: "text-left" %>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

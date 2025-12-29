@@ -1,0 +1,16 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+owner_acme:
+  user: owner
+  organization: acme
+  role: 2  # owner
+
+admin_acme:
+  user: admin
+  organization: acme
+  role: 1  # admin
+
+member_acme:
+  user: member
+  organization: acme
+  role: 0  # member
