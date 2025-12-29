@@ -1,0 +1,64 @@
+<% content_for(:title) { "Login - Webhook App" } %>
+
+<div class="min-h-screen flex items-center justify-center">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold">Welcome back</h1>
+        <p class="text-base-content/60 mt-2">Login to your Webhook App account</p>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name), html: { class: "space-y-4" }) do |f| %>
+        <div class="form-control w-full">
+          <%= f.label :email, class: "label" do %>
+            <span class="label-text">Email</span>
+          <% end %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input input-bordered w-full", placeholder: "you@example.com" %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password, class: "label" do %>
+            <span class="label-text">Password</span>
+          <% end %>
+          <%= f.password_field :password, autocomplete: "current-password", class: "input input-bordered w-full", placeholder: "Enter your password" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="form-control">
+            <label class="label cursor-pointer justify-start gap-2">
+              <%= f.check_box :remember_me, class: "checkbox checkbox-sm" %>
+              <span class="label-text">Remember me</span>
+            </label>
+          </div>
+        <% end %>
+
+        <div class="form-control mt-6">
+          <%= f.submit "Login", class: "btn btn-primary w-full" %>
+        </div>
+      <% end %>
+
+      <div class="divider">OR</div>
+
+      <div class="text-center space-y-2">
+        <%- if devise_mapping.registerable? && controller_name != 'registrations' %>
+          <p>
+            Don't have an account?
+            <%= link_to "Sign up", new_registration_path(resource_name), class: "link link-primary" %>
+          </p>
+        <% end %>
+
+        <%- if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+          <p>
+            <%= link_to "Forgot your password?", new_password_path(resource_name), class: "link link-secondary" %>
+          </p>
+        <% end %>
+
+        <%- if devise_mapping.confirmable? && controller_name != 'confirmations' %>
+          <p>
+            <%= link_to "Didn't receive confirmation instructions?", new_confirmation_path(resource_name), class: "link link-secondary text-sm" %>
+          </p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>

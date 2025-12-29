@@ -1,0 +1,15 @@
+You're invited to join <%= @organization.name %> on Webhook App!
+
+You've been invited as a <%= @invitation.role %>.
+<% if @invitation.invited_by %>
+
+<%= @invitation.invited_by.full_name %> has invited you to collaborate.
+<% end %>
+
+Accept the invitation by visiting:
+<%= @accept_url %>
+
+This invitation will expire in 7 days.
+
+---
+If you didn't expect this invitation, you can safely ignore this email.

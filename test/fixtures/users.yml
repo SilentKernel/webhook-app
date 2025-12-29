@@ -1,0 +1,30 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+owner:
+  email: owner@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  first_name: John
+  last_name: Owner
+  confirmed_at: <%= Time.current %>
+
+admin:
+  email: admin@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  first_name: Jane
+  last_name: Admin
+  confirmed_at: <%= Time.current %>
+
+member:
+  email: member@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  first_name: Bob
+  last_name: Member
+  confirmed_at: <%= Time.current %>
+
+unconfirmed:
+  email: unconfirmed@example.com
+  encrypted_password: <%= Devise::Encryptor.digest(User, 'password123') %>
+  first_name: Pending
+  last_name: User
+  confirmation_token: abc123
+  confirmation_sent_at: <%= Time.current %>

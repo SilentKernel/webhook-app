@@ -1,0 +1,28 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+pending:
+  organization: acme
+  email: pending@example.com
+  role: 0
+  token: pending_token_123
+  invited_by: owner
+  accepted_at:
+  expires_at: <%= 7.days.from_now %>
+
+accepted:
+  organization: acme
+  email: accepted@example.com
+  role: 0
+  token: accepted_token_456
+  invited_by: owner
+  accepted_at: <%= 1.day.ago %>
+  expires_at: <%= 6.days.from_now %>
+
+expired:
+  organization: acme
+  email: expired@example.com
+  role: 0
+  token: expired_token_789
+  invited_by: owner
+  accepted_at:
+  expires_at: <%= 1.day.ago %>

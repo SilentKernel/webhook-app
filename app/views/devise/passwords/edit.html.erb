@@ -1,0 +1,46 @@
+<% content_for(:title) { "Reset Password - Webhook App" } %>
+
+<div class="min-h-screen flex items-center justify-center">
+  <div class="card w-full max-w-md bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="text-center mb-6">
+        <h1 class="text-3xl font-bold">Change your password</h1>
+        <p class="text-base-content/60 mt-2">Enter your new password below</p>
+      </div>
+
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :put, class: "space-y-4" }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+        <%= f.hidden_field :reset_password_token %>
+
+        <div class="form-control w-full">
+          <%= f.label :password, "New Password", class: "label" do %>
+            <span class="label-text">New Password</span>
+          <% end %>
+          <%= f.password_field :password, autofocus: true, autocomplete: "new-password", class: "input input-bordered w-full", placeholder: "Enter new password" %>
+          <% if @minimum_password_length %>
+            <label class="label">
+              <span class="label-text-alt text-base-content/60"><%= @minimum_password_length %> characters minimum</span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password_confirmation, class: "label" do %>
+            <span class="label-text">Confirm New Password</span>
+          <% end %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "input input-bordered w-full", placeholder: "Confirm new password" %>
+        </div>
+
+        <div class="form-control mt-6">
+          <%= f.submit "Change Password", class: "btn btn-primary w-full" %>
+        </div>
+      <% end %>
+
+      <div class="text-center mt-4">
+        <p>
+          <%= link_to "Back to Login", new_session_path(resource_name), class: "link link-secondary" %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

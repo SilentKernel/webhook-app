@@ -1,0 +1,87 @@
+<% content_for(:title) { "Edit Profile - Webhook App" } %>
+
+<div class="max-w-2xl mx-auto">
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-2xl mb-6">Edit Profile</h2>
+
+      <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: "space-y-4" }) do |f| %>
+        <%= render "devise/shared/error_messages", resource: resource %>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div class="form-control w-full">
+            <%= f.label :first_name, class: "label" do %>
+              <span class="label-text">First Name</span>
+            <% end %>
+            <%= f.text_field :first_name, class: "input input-bordered w-full" %>
+          </div>
+
+          <div class="form-control w-full">
+            <%= f.label :last_name, class: "label" do %>
+              <span class="label-text">Last Name</span>
+            <% end %>
+            <%= f.text_field :last_name, class: "input input-bordered w-full" %>
+          </div>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :email, class: "label" do %>
+            <span class="label-text">Email</span>
+          <% end %>
+          <%= f.email_field :email, autocomplete: "email", class: "input input-bordered w-full" %>
+
+          <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+            <label class="label">
+              <span class="label-text-alt text-warning">Currently waiting confirmation for: <%= resource.unconfirmed_email %></span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="divider">Change Password</div>
+
+        <div class="form-control w-full">
+          <%= f.label :password, class: "label" do %>
+            <span class="label-text">New Password</span>
+          <% end %>
+          <%= f.password_field :password, autocomplete: "new-password", class: "input input-bordered w-full", placeholder: "Leave blank if you don't want to change" %>
+          <% if @minimum_password_length %>
+            <label class="label">
+              <span class="label-text-alt text-base-content/60"><%= @minimum_password_length %> characters minimum</span>
+            </label>
+          <% end %>
+        </div>
+
+        <div class="form-control w-full">
+          <%= f.label :password_confirmation, class: "label" do %>
+            <span class="label-text">Confirm New Password</span>
+          <% end %>
+          <%= f.password_field :password_confirmation, autocomplete: "new-password", class: "input input-bordered w-full" %>
+        </div>
+
+        <div class="divider">Confirm Changes</div>
+
+        <div class="form-control w-full">
+          <%= f.label :current_password, class: "label" do %>
+            <span class="label-text">Current Password <span class="text-error">*</span></span>
+          <% end %>
+          <%= f.password_field :current_password, autocomplete: "current-password", class: "input input-bordered w-full", placeholder: "Required to save changes" %>
+        </div>
+
+        <div class="flex gap-4 mt-6">
+          <%= f.submit "Update Profile", class: "btn btn-primary flex-1" %>
+          <%= link_to "Cancel", dashboard_path, class: "btn btn-ghost" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl mt-6">
+    <div class="card-body">
+      <h3 class="card-title text-error">Danger Zone</h3>
+      <p class="text-base-content/60">Once you delete your account, there is no going back.</p>
+      <div class="card-actions justify-end mt-4">
+        <%= button_to "Delete Account", registration_path(resource_name), method: :delete, data: { turbo_confirm: "Are you sure you want to delete your account? This action cannot be undone." }, class: "btn btn-error btn-outline" %>
+      </div>
+    </div>
+  </div>
+</div>
