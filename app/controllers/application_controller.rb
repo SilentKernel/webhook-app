@@ -6,6 +6,7 @@ class ApplicationController < ActionController::Base
 
   before_action :set_locale
   before_action :configure_permitted_parameters, if: :devise_controller?
+  around_action :set_timezone, if: :current_organization
 
   helper_method :current_organization, :owner?, :admin_or_owner?, :current_membership
 
@@ -86,5 +87,9 @@ class ApplicationController < ActionController::Base
 
   def after_sign_out_path_for(_resource_or_scope)
     new_user_session_path
+  end
+
+  def set_timezone
+    Time.use_zone(current_organization.timezone) { yield }
   end
 end

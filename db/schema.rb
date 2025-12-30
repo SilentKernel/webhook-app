@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_162835) do
+ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -29,6 +29,47 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_162835) do
     t.index ["status"], name: "index_connections_on_status"
   end
 
+  create_table "deliveries", force: :cascade do |t|
+    t.integer "attempt_count", default: 0, null: false
+    t.datetime "completed_at"
+    t.bigint "connection_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "destination_id", null: false
+    t.bigint "event_id", null: false
+    t.integer "max_attempts", default: 5, null: false
+    t.datetime "next_attempt_at"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["connection_id"], name: "index_deliveries_on_connection_id"
+    t.index ["destination_id"], name: "index_deliveries_on_destination_id"
+    t.index ["event_id"], name: "index_deliveries_on_event_id"
+    t.index ["next_attempt_at"], name: "index_deliveries_on_next_attempt_at"
+    t.index ["status", "next_attempt_at"], name: "index_deliveries_on_status_and_next_attempt_at"
+    t.index ["status"], name: "index_deliveries_on_status"
+  end
+
+  create_table "delivery_attempts", force: :cascade do |t|
+    t.integer "attempt_number", null: false
+    t.datetime "attempted_at", null: false
+    t.datetime "created_at", null: false
+    t.bigint "delivery_id", null: false
+    t.integer "duration_ms"
+    t.string "error_code"
+    t.string "error_message"
+    t.text "request_body"
+    t.jsonb "request_headers", default: {}
+    t.string "request_method", null: false
+    t.string "request_url", null: false
+    t.text "response_body"
+    t.jsonb "response_headers", default: {}
+    t.integer "response_status"
+    t.integer "status", default: 0, null: false
+    t.datetime "updated_at", null: false
+    t.index ["attempted_at"], name: "index_delivery_attempts_on_attempted_at"
+    t.index ["delivery_id"], name: "index_delivery_attempts_on_delivery_id"
+    t.index ["status"], name: "index_delivery_attempts_on_status"
+  end
+
   create_table "destinations", force: :cascade do |t|
     t.integer "auth_type", default: 0, null: false
     t.string "auth_value"
@@ -44,6 +85,25 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_162835) do
     t.string "url", null: false
     t.index ["organization_id"], name: "index_destinations_on_organization_id"
     t.index ["status"], name: "index_destinations_on_status"
+  end
+
+  create_table "events", force: :cascade do |t|
+    t.string "content_type"
+    t.datetime "created_at", null: false
+    t.string "event_type"
+    t.jsonb "headers", default: {}
+    t.jsonb "payload", default: {}
+    t.jsonb "query_params", default: {}
+    t.datetime "received_at", null: false
+    t.bigint "source_id", null: false
+    t.string "source_ip"
+    t.string "uid", null: false
+    t.datetime "updated_at", null: false
+    t.index ["event_type"], name: "index_events_on_event_type"
+    t.index ["received_at"], name: "index_events_on_received_at"
+    t.index ["source_id", "received_at"], name: "index_events_on_source_id_and_received_at"
+    t.index ["source_id"], name: "index_events_on_source_id"
+    t.index ["uid"], name: "index_events_on_uid", unique: true
   end
 
   create_table "invitations", force: :cascade do |t|
@@ -76,6 +136,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_162835) do
   create_table "organizations", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "name"
+    t.string "timezone", default: "UTC", null: false
     t.datetime "updated_at", null: false
   end
 
@@ -128,7 +189,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_162835) do
 
   add_foreign_key "connections", "destinations"
   add_foreign_key "connections", "sources"
+  add_foreign_key "deliveries", "connections"
+  add_foreign_key "deliveries", "destinations"
+  add_foreign_key "deliveries", "events"
+  add_foreign_key "delivery_attempts", "deliveries"
   add_foreign_key "destinations", "organizations"
+  add_foreign_key "events", "sources"
   add_foreign_key "invitations", "organizations"
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "memberships", "organizations"

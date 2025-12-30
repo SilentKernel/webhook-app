@@ -2,6 +2,8 @@
 
 acme:
   name: Acme Corp
+  timezone: Eastern Time (US & Canada)
 
 other:
   name: Other Company
+  timezone: UTC
