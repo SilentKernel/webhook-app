@@ -1,0 +1,25 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+stripe_to_production:
+  source: stripe_production
+  destination: production_api
+  name: Stripe to Production
+  rules: []
+  status: 0
+  priority: 0
+
+github_to_staging:
+  source: github_webhook
+  destination: staging_api
+  name: GitHub to Staging
+  rules: []
+  status: 0
+  priority: 1
+
+paused_connection:
+  source: stripe_production
+  destination: staging_api
+  name: Paused Connection
+  rules: []
+  status: 1
+  priority: 2
