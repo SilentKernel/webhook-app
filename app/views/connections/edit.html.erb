@@ -1,0 +1,21 @@
+<% content_for(:title) { "Edit Connection - Connections" } %>
+
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><%= link_to "Connections", connections_path %></li>
+        <li><%= link_to @connection.name.presence || "#{@connection.source.name} → #{@connection.destination.name}", connection_path(@connection) %></li>
+        <li>Edit</li>
+      </ul>
+    </div>
+    <h1 class="text-3xl font-bold mt-2">Edit Connection</h1>
+    <p class="text-base-content/60 mt-1">Update connection settings</p>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <%= render "form", connection: @connection %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,125 @@
+<%= form_with model: destination, url: destination.persisted? ? destination_path(destination) : destinations_path, class: "space-y-4" do |f| %>
+  <% if destination.errors.any? %>
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <ul class="text-sm list-disc list-inside">
+          <% destination.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-control w-full">
+    <%= f.label :name, class: "label" do %>
+      <span class="label-text">Name <span class="text-error">*</span></span>
+    <% end %>
+    <%= f.text_field :name, class: "input input-bordered w-full", placeholder: "e.g., Production API", required: true, autofocus: true %>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :url, class: "label" do %>
+      <span class="label-text">URL <span class="text-error">*</span></span>
+    <% end %>
+    <%= f.url_field :url, class: "input input-bordered w-full", placeholder: "https://api.example.com/webhooks", required: true %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">The endpoint URL where webhooks will be forwarded</span>
+    </label>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="form-control w-full">
+      <%= f.label :http_method, class: "label" do %>
+        <span class="label-text">HTTP Method <span class="text-error">*</span></span>
+      <% end %>
+      <%= f.select :http_method, [
+        ["POST", "POST"],
+        ["PUT", "PUT"],
+        ["PATCH", "PATCH"],
+        ["GET", "GET"],
+        ["DELETE", "DELETE"]
+      ], {}, class: "select select-bordered w-full" %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :status, class: "label" do %>
+        <span class="label-text">Status <span class="text-error">*</span></span>
+      <% end %>
+      <%= f.select :status, [
+        ["Active", "active"],
+        ["Paused", "paused"],
+        ["Disabled", "disabled"]
+      ], {}, class: "select select-bordered w-full" %>
+    </div>
+  </div>
+
+  <div class="divider">Authentication</div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="form-control w-full">
+      <%= f.label :auth_type, class: "label" do %>
+        <span class="label-text">Auth Type</span>
+      <% end %>
+      <%= f.select :auth_type, [
+        ["None", "none"],
+        ["Bearer Token", "bearer"],
+        ["Basic Auth", "basic"],
+        ["API Key", "api_key"]
+      ], {}, class: "select select-bordered w-full" %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :auth_value, class: "label" do %>
+        <span class="label-text">Auth Value</span>
+      <% end %>
+      <%= f.password_field :auth_value, class: "input input-bordered w-full", placeholder: destination.persisted? ? "Leave blank to keep current" : "Token, credentials, or API key" %>
+    </div>
+  </div>
+
+  <div class="divider">Advanced Settings</div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="form-control w-full">
+      <%= f.label :timeout_seconds, class: "label" do %>
+        <span class="label-text">Timeout (seconds)</span>
+      <% end %>
+      <%= f.number_field :timeout_seconds, class: "input input-bordered w-full", placeholder: "30", min: 1, max: 300 %>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Default: 30 seconds</span>
+      </label>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :max_delivery_rate, class: "label" do %>
+        <span class="label-text">Max Delivery Rate (req/sec)</span>
+      <% end %>
+      <%= f.number_field :max_delivery_rate, class: "input input-bordered w-full", placeholder: "Leave empty for unlimited", min: 1 %>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Rate limit for webhook delivery</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :headers, class: "label" do %>
+      <span class="label-text">Custom Headers (JSON)</span>
+    <% end %>
+    <%= f.text_area :headers,
+        value: destination.headers.present? ? JSON.pretty_generate(destination.headers) : "",
+        class: "textarea textarea-bordered w-full font-mono text-sm",
+        rows: 4,
+        placeholder: '{"X-Custom-Header": "value", "X-Another-Header": "value"}' %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">Additional headers to include with forwarded webhooks (JSON format)</span>
+    </label>
+  </div>
+
+  <div class="flex gap-4 mt-6">
+    <%= f.submit destination.persisted? ? "Update Destination" : "Create Destination", class: "btn btn-primary flex-1" %>
+    <%= link_to "Cancel", destination.persisted? ? destination_path(destination) : destinations_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

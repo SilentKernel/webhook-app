@@ -61,5 +61,10 @@ Rails.application.routes.draw do
 
     # Organization settings
     resource :settings, only: [:show, :update]
+
+    # Webhook management
+    resources :sources
+    resources :destinations
+    resources :connections
   end
 end

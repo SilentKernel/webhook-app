@@ -1,0 +1,20 @@
+<% content_for(:title) { "New Destination - #{current_organization.name}" } %>
+
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><%= link_to "Destinations", destinations_path %></li>
+        <li>New Destination</li>
+      </ul>
+    </div>
+    <h1 class="text-3xl font-bold mt-2">New Destination</h1>
+    <p class="text-base-content/60 mt-1">Create a new webhook forwarding target</p>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <%= render "form", destination: @destination %>
+    </div>
+  </div>
+</div>

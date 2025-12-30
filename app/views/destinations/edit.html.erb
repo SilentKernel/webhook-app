@@ -1,0 +1,21 @@
+<% content_for(:title) { "Edit #{@destination.name} - Destinations" } %>
+
+<div class="max-w-2xl mx-auto">
+  <div class="mb-6">
+    <div class="text-sm breadcrumbs">
+      <ul>
+        <li><%= link_to "Destinations", destinations_path %></li>
+        <li><%= link_to @destination.name, destination_path(@destination) %></li>
+        <li>Edit</li>
+      </ul>
+    </div>
+    <h1 class="text-3xl font-bold mt-2">Edit Destination</h1>
+    <p class="text-base-content/60 mt-1">Update destination settings</p>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <%= render "form", destination: @destination %>
+    </div>
+  </div>
+</div>

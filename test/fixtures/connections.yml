@@ -23,3 +23,11 @@ paused_connection:
   rules: []
   status: 1
   priority: 2
+
+other_org_connection:
+  source: other_org_source
+  destination: other_org_destination
+  name: Other Org Connection
+  rules: []
+  status: 0
+  priority: 0
