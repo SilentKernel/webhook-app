@@ -1,0 +1,61 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+pending_delivery:
+  event: stripe_payment_event
+  connection: stripe_to_production
+  destination: production_api
+  status: 0
+  attempt_count: 0
+  max_attempts: 5
+  next_attempt_at: <%= Time.current %>
+  completed_at:
+
+successful_delivery:
+  event: stripe_payment_event
+  connection: github_to_staging
+  destination: staging_api
+  status: 3
+  attempt_count: 1
+  max_attempts: 5
+  next_attempt_at:
+  completed_at: <%= 1.hour.ago %>
+
+failed_delivery:
+  event: github_push_event
+  connection: stripe_to_production
+  destination: production_api
+  status: 4
+  attempt_count: 5
+  max_attempts: 5
+  next_attempt_at:
+  completed_at: <%= 30.minutes.ago %>
+
+retrying_delivery:
+  event: old_event
+  connection: stripe_to_production
+  destination: production_api
+  status: 4
+  attempt_count: 2
+  max_attempts: 5
+  next_attempt_at: <%= 5.minutes.from_now %>
+  completed_at:
+
+queued_delivery:
+  event: github_push_event
+  connection: github_to_staging
+  destination: staging_api
+  status: 1
+  attempt_count: 0
+  max_attempts: 5
+  next_attempt_at:
+  completed_at:
+
+delivering_delivery:
+  event: old_event
+  connection: github_to_staging
+  destination: staging_api
+  status: 2
+  attempt_count: 1
+  max_attempts: 5
+  next_attempt_at:
+  completed_at:

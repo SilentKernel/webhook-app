@@ -2,6 +2,7 @@ class Connection < ApplicationRecord
   belongs_to :source
   belongs_to :destination
   has_one :organization, through: :source
+  has_many :deliveries, dependent: :destroy
 
   enum :status, { active: 0, paused: 1, disabled: 2 }
 

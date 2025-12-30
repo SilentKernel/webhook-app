@@ -6,6 +6,7 @@ class Organization < ApplicationRecord
   has_many :destinations, dependent: :destroy
 
   validates :name, presence: true
+  validates :timezone, presence: true, inclusion: { in: ActiveSupport::TimeZone.all.map(&:name) }
 
   def owner
     memberships.find_by(role: :owner)&.user

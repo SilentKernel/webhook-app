@@ -1,0 +1,72 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+successful_attempt:
+  delivery: successful_delivery
+  attempt_number: 1
+  status: 1
+  request_url: https://api.example.com/webhooks
+  request_method: POST
+  request_headers:
+    content-type: application/json
+    authorization: Bearer secret
+  request_body: '{"id":"pay_123","amount":1000}'
+  response_status: 200
+  response_headers:
+    content-type: application/json
+  response_body: '{"status":"ok"}'
+  duration_ms: 150
+  error_message:
+  error_code:
+  attempted_at: <%= 1.hour.ago %>
+
+failed_attempt_timeout:
+  delivery: failed_delivery
+  attempt_number: 1
+  status: 2
+  request_url: https://api.example.com/webhooks
+  request_method: POST
+  request_headers:
+    content-type: application/json
+  request_body: '{"ref":"refs/heads/main"}'
+  response_status:
+  response_headers: {}
+  response_body:
+  duration_ms: 30000
+  error_message: Request timed out after 30 seconds
+  error_code: timeout
+  attempted_at: <%= 2.hours.ago %>
+
+failed_attempt_server_error:
+  delivery: failed_delivery
+  attempt_number: 2
+  status: 2
+  request_url: https://api.example.com/webhooks
+  request_method: POST
+  request_headers:
+    content-type: application/json
+  request_body: '{"ref":"refs/heads/main"}'
+  response_status: 500
+  response_headers:
+    content-type: text/html
+  response_body: Internal Server Error
+  duration_ms: 500
+  error_message: Server returned 500 error
+  error_code: server_error
+  attempted_at: <%= 1.hour.ago %>
+
+pending_attempt:
+  delivery: pending_delivery
+  attempt_number: 1
+  status: 0
+  request_url: https://api.example.com/webhooks
+  request_method: POST
+  request_headers:
+    content-type: application/json
+  request_body: '{"id":"pay_123"}'
+  response_status:
+  response_headers: {}
+  response_body:
+  duration_ms:
+  error_message:
+  error_code:
+  attempted_at: <%= Time.current %>

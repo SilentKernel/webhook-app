@@ -2,6 +2,7 @@ class Source < ApplicationRecord
   belongs_to :organization
   belongs_to :source_type, optional: true
   has_many :connections, dependent: :destroy
+  has_many :events, dependent: :destroy
 
   enum :status, { active: 0, paused: 1 }
 

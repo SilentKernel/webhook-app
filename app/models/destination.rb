@@ -1,6 +1,7 @@
 class Destination < ApplicationRecord
   belongs_to :organization
   has_many :connections, dependent: :destroy
+  has_many :deliveries, dependent: :destroy
 
   enum :status, { active: 0, paused: 1, disabled: 2 }, prefix: true
   enum :auth_type, { none: 0, bearer: 1, basic: 2, api_key: 3 }, prefix: true

@@ -69,4 +69,39 @@ class OrganizationTest < ActiveSupport::TestCase
       org.destroy
     end
   end
+
+  test "requires timezone" do
+    org = Organization.new(name: "Test Org", timezone: nil)
+    assert_not org.valid?
+    assert_includes org.errors[:timezone], "can't be blank"
+  end
+
+  test "timezone must be valid ActiveSupport timezone" do
+    org = Organization.new(name: "Test Org", timezone: "Invalid/Timezone")
+    assert_not org.valid?
+    assert org.errors[:timezone].any?
+  end
+
+  test "accepts valid timezone" do
+    org = Organization.new(name: "Test Org", timezone: "Eastern Time (US & Canada)")
+    assert org.valid?
+  end
+
+  test "accepts UTC timezone" do
+    org = Organization.new(name: "Test Org", timezone: "UTC")
+    assert org.valid?
+  end
+
+  test "default timezone is UTC" do
+    # The database default is UTC
+    org = organizations(:other)
+    assert_equal "UTC", org.timezone
+  end
+
+  test "timezone can be changed" do
+    org = organizations(:acme)
+    org.timezone = "London"
+    org.save!
+    assert_equal "London", org.reload.timezone
+  end
 end
