@@ -90,3 +90,8 @@ Temporary Items
 .Trash-*
 .nfs*
 nohup.out
+
+# We install npm locally to help IDE to autocomplete
+/package.json
+/package-lock.json
+/node_modules/
