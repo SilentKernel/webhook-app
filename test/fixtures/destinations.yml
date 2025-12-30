@@ -1,0 +1,41 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+production_api:
+  organization: acme
+  name: Production API
+  url: https://api.example.com/webhooks
+  http_method: POST
+  headers: {}
+  auth_type: 0
+  status: 0
+  timeout_seconds: 30
+
+staging_api:
+  organization: acme
+  name: Staging API
+  url: https://staging.example.com/webhooks
+  http_method: POST
+  headers: {}
+  auth_type: 1
+  status: 0
+  timeout_seconds: 60
+
+disabled_destination:
+  organization: acme
+  name: Disabled Destination
+  url: https://disabled.example.com/webhooks
+  http_method: POST
+  headers: {}
+  auth_type: 0
+  status: 2
+  timeout_seconds: 30
+
+other_org_destination:
+  organization: other
+  name: Other Org Destination
+  url: https://other.example.com/webhooks
+  http_method: POST
+  headers: {}
+  auth_type: 0
+  status: 0
+  timeout_seconds: 30

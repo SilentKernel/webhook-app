@@ -10,9 +10,41 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.0].define(version: 2025_12_29_164013) do
+ActiveRecord::Schema[8.0].define(version: 2025_12_30_162835) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+
+  create_table "connections", force: :cascade do |t|
+    t.bigint "source_id", null: false
+    t.bigint "destination_id", null: false
+    t.string "name"
+    t.jsonb "rules", default: []
+    t.integer "status", default: 0, null: false
+    t.integer "priority", default: 0
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["destination_id"], name: "index_connections_on_destination_id"
+    t.index ["source_id", "destination_id"], name: "index_connections_on_source_id_and_destination_id", unique: true
+    t.index ["source_id"], name: "index_connections_on_source_id"
+    t.index ["status"], name: "index_connections_on_status"
+  end
+
+  create_table "destinations", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.string "name", null: false
+    t.string "url", null: false
+    t.string "http_method", default: "POST"
+    t.jsonb "headers", default: {}
+    t.integer "auth_type", default: 0, null: false
+    t.string "auth_value"
+    t.integer "status", default: 0, null: false
+    t.integer "timeout_seconds", default: 30
+    t.integer "max_delivery_rate"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["organization_id"], name: "index_destinations_on_organization_id"
+    t.index ["status"], name: "index_destinations_on_status"
+  end
 
   create_table "invitations", force: :cascade do |t|
     t.bigint "organization_id", null: false
@@ -47,6 +79,34 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_29_164013) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "source_types", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.string "verification_type", null: false
+    t.jsonb "default_config", default: {}
+    t.string "icon"
+    t.boolean "active", default: true
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["slug"], name: "index_source_types_on_slug", unique: true
+  end
+
+  create_table "sources", force: :cascade do |t|
+    t.bigint "organization_id", null: false
+    t.bigint "source_type_id"
+    t.string "name", null: false
+    t.string "ingest_token", null: false
+    t.string "verification_type", null: false
+    t.string "verification_secret"
+    t.integer "status", default: 0, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["ingest_token"], name: "index_sources_on_ingest_token", unique: true
+    t.index ["organization_id"], name: "index_sources_on_organization_id"
+    t.index ["source_type_id"], name: "index_sources_on_source_type_id"
+    t.index ["status"], name: "index_sources_on_status"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
@@ -66,8 +126,13 @@ ActiveRecord::Schema[8.0].define(version: 2025_12_29_164013) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  add_foreign_key "connections", "destinations"
+  add_foreign_key "connections", "sources"
+  add_foreign_key "destinations", "organizations"
   add_foreign_key "invitations", "organizations"
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "sources", "organizations"
+  add_foreign_key "sources", "source_types"
 end

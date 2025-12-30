@@ -1,0 +1,29 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+stripe:
+  name: Stripe
+  slug: stripe
+  verification_type: stripe
+  default_config: {}
+  active: true
+
+github:
+  name: GitHub
+  slug: github
+  verification_type: github
+  default_config: {}
+  active: true
+
+hmac:
+  name: Generic HMAC
+  slug: hmac
+  verification_type: hmac
+  default_config: {}
+  active: true
+
+inactive:
+  name: Inactive Type
+  slug: inactive
+  verification_type: none
+  default_config: {}
+  active: false
