@@ -1,0 +1,75 @@
+<% verification_types_map = @source_types.each_with_object({}) { |st, h| h[st.id.to_s] = st.verification_type } %>
+<%= form_with model: source, url: source.persisted? ? source_path(source) : sources_path, class: "space-y-4", data: { controller: "source-form", source_form_verification_types_value: verification_types_map.to_json } do |f| %>
+  <% if source.errors.any? %>
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <ul class="text-sm list-disc list-inside">
+          <% source.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-control w-full">
+    <%= f.label :name, class: "label" do %>
+      <span class="label-text">Name <span class="text-error">*</span></span>
+    <% end %>
+    <%= f.text_field :name, class: "input input-bordered w-full", placeholder: "e.g., Stripe Production", required: true, autofocus: true %>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :source_type_id, class: "label" do %>
+      <span class="label-text">Source Type</span>
+    <% end %>
+    <%= f.select :source_type_id, @source_types.map { |st| [st.name, st.id] }, { include_blank: "Custom (no preset)" }, { class: "select select-bordered w-full", data: { source_form_target: "sourceType", action: "change->source-form#sourceTypeChanged" } } %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">Select a preset to auto-configure verification settings</span>
+    </label>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :verification_type, class: "label" do %>
+      <span class="label-text">Verification Type <span class="text-error">*</span></span>
+    <% end %>
+    <%= f.select :verification_type, [
+      ["None", "none"],
+      ["Stripe", "stripe"],
+      ["Shopify", "shopify"],
+      ["GitHub", "github"],
+      ["HMAC", "hmac"]
+    ], {}, { class: "select select-bordered w-full", data: { source_form_target: "verificationType" } } %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">How incoming webhooks should be verified</span>
+    </label>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :verification_secret, class: "label" do %>
+      <span class="label-text">Verification Secret</span>
+    <% end %>
+    <%= f.password_field :verification_secret, class: "input input-bordered w-full", placeholder: source.persisted? ? "Leave blank to keep current secret" : "Enter webhook signing secret" %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">The secret key used to verify webhook signatures</span>
+    </label>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :status, class: "label" do %>
+      <span class="label-text">Status <span class="text-error">*</span></span>
+    <% end %>
+    <%= f.select :status, [["Active", "active"], ["Paused", "paused"]], {}, class: "select select-bordered w-full" %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">Paused sources will not process incoming webhooks</span>
+    </label>
+  </div>
+
+  <div class="flex gap-4 mt-6">
+    <%= f.submit source.persisted? ? "Update Source" : "Create Source", class: "btn btn-primary flex-1" %>
+    <%= link_to "Cancel", source.persisted? ? source_path(source) : sources_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

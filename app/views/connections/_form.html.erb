@@ -1,0 +1,106 @@
+<%= form_with model: connection, url: connection.persisted? ? connection_path(connection) : connections_path, class: "space-y-4" do |f| %>
+  <% if connection.errors.any? %>
+    <div class="alert alert-error">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <ul class="text-sm list-disc list-inside">
+          <% connection.errors.full_messages.each do |message| %>
+            <li><%= message %></li>
+          <% end %>
+        </ul>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="form-control w-full">
+    <%= f.label :name, class: "label" do %>
+      <span class="label-text">Name</span>
+    <% end %>
+    <%= f.text_field :name, class: "input input-bordered w-full", placeholder: "Optional name for this connection" %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">Leave blank to use "Source → Destination" as the name</span>
+    </label>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="form-control w-full">
+      <%= f.label :source_id, class: "label" do %>
+        <span class="label-text">Source <span class="text-error">*</span></span>
+      <% end %>
+      <% if @sources.any? %>
+        <%= f.select :source_id, @sources.map { |s| [s.name, s.id] },
+            { include_blank: "Select a source...", selected: params[:source_id] || connection.source_id },
+            class: "select select-bordered w-full", required: true %>
+      <% else %>
+        <div class="alert alert-warning">
+          <span>No active sources available. <%= link_to "Create a source", new_source_path, class: "link" %> first.</span>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :destination_id, class: "label" do %>
+        <span class="label-text">Destination <span class="text-error">*</span></span>
+      <% end %>
+      <% if @destinations.any? %>
+        <%= f.select :destination_id, @destinations.map { |d| [d.name, d.id] },
+            { include_blank: "Select a destination...", selected: params[:destination_id] || connection.destination_id },
+            class: "select select-bordered w-full", required: true %>
+      <% else %>
+        <div class="alert alert-warning">
+          <span>No active destinations available. <%= link_to "Create a destination", new_destination_path, class: "link" %> first.</span>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid md:grid-cols-2 gap-4">
+    <div class="form-control w-full">
+      <%= f.label :status, class: "label" do %>
+        <span class="label-text">Status <span class="text-error">*</span></span>
+      <% end %>
+      <%= f.select :status, [
+        ["Active", "active"],
+        ["Paused", "paused"],
+        ["Disabled", "disabled"]
+      ], {}, class: "select select-bordered w-full" %>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :priority, class: "label" do %>
+        <span class="label-text">Priority</span>
+      <% end %>
+      <%= f.number_field :priority, class: "input input-bordered w-full", value: connection.priority || 0, min: 0 %>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Lower numbers = higher priority</span>
+      </label>
+    </div>
+  </div>
+
+  <div class="form-control w-full">
+    <%= f.label :rules, class: "label" do %>
+      <span class="label-text">Rules (JSON)</span>
+    <% end %>
+    <%= f.text_area :rules,
+        value: connection.rules.present? ? JSON.pretty_generate(connection.rules) : "",
+        class: "textarea textarea-bordered w-full font-mono text-sm",
+        rows: 6,
+        placeholder: '[
+  {"type": "filter", "config": {"event_types": ["payment.completed"]}}
+]' %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">Optional filtering and transformation rules (JSON array format)</span>
+    </label>
+  </div>
+
+  <div class="flex gap-4 mt-6">
+    <% if @sources.any? && @destinations.any? %>
+      <%= f.submit connection.persisted? ? "Update Connection" : "Create Connection", class: "btn btn-primary flex-1" %>
+    <% else %>
+      <button type="button" class="btn btn-primary flex-1" disabled>Create Connection</button>
+    <% end %>
+    <%= link_to "Cancel", connection.persisted? ? connection_path(connection) : connections_path, class: "btn btn-ghost" %>
+  </div>
+<% end %>

@@ -1,0 +1,60 @@
+# frozen_string_literal: true
+
+class SourcesController < ApplicationController
+  before_action :authenticate_user!
+  before_action :require_organization
+  before_action :set_source, only: [ :show, :edit, :update, :destroy ]
+  before_action :load_source_types, only: [ :new, :edit, :create, :update ]
+
+  def index
+    @sources = current_organization.sources.includes(:source_type)
+  end
+
+  def show
+    @connections = @source.connections.includes(:destination)
+  end
+
+  def new
+    @source = current_organization.sources.build
+  end
+
+  def create
+    @source = current_organization.sources.build(source_params)
+
+    if @source.save
+      redirect_to source_path(@source), notice: "Source created successfully."
+    else
+      render :new, status: :unprocessable_entity
+    end
+  end
+
+  def edit
+  end
+
+  def update
+    if @source.update(source_params)
+      redirect_to source_path(@source), notice: "Source updated successfully."
+    else
+      render :edit, status: :unprocessable_entity
+    end
+  end
+
+  def destroy
+    @source.destroy
+    redirect_to sources_path, notice: "Source deleted successfully."
+  end
+
+  private
+
+  def set_source
+    @source = current_organization.sources.find(params[:id])
+  end
+
+  def load_source_types
+    @source_types = SourceType.active
+  end
+
+  def source_params
+    params.require(:source).permit(:name, :source_type_id, :verification_type, :verification_secret, :status)
+  end
+end
