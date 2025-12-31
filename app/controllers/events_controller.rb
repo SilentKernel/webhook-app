@@ -6,6 +6,7 @@ class EventsController < ApplicationController
   before_action :set_event, only: [ :show, :replay ]
 
   def index
+    @sources = current_organization.sources
     @events = Event.joins(:source)
                    .where(sources: { organization_id: current_organization.id })
                    .includes(:source, :deliveries)

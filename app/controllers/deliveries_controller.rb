@@ -6,6 +6,7 @@ class DeliveriesController < ApplicationController
   before_action :set_delivery, only: [ :show, :retry ]
 
   def index
+    @destinations = current_organization.destinations
     @deliveries = Delivery.joins(event: :source)
                           .where(sources: { organization_id: current_organization.id })
                           .includes(:event, :destination, :connection)

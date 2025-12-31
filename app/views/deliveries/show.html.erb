@@ -1,1 +1,217 @@
-<h1>Delivery Details</h1>
+<% content_for(:title) { "Delivery Details - Deliveries" } %>
+
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="text-sm breadcrumbs">
+        <ul>
+          <li><%= link_to "Deliveries", deliveries_path %></li>
+          <li>Delivery Details</li>
+        </ul>
+      </div>
+      <h1 class="text-3xl font-bold mt-2">Delivery Details</h1>
+    </div>
+    <div class="flex gap-2">
+      <% if @delivery.can_retry? %>
+        <%= button_to "Retry Now", retry_delivery_path(@delivery),
+            method: :post,
+            class: "btn btn-warning",
+            data: { turbo_confirm: "Retry this delivery?" } %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Delivery Information</h2>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <tbody>
+              <tr>
+                <th class="w-1/3">Event</th>
+                <td>
+                  <%= link_to @delivery.event.uid.truncate(20), event_path(@delivery.event), class: "link link-hover font-mono text-sm" %>
+                </td>
+              </tr>
+              <tr>
+                <th>Connection</th>
+                <td>
+                  <%= link_to @delivery.connection.source.name, source_path(@delivery.connection.source), class: "link link-hover" %>
+                  <span class="mx-2">→</span>
+                  <%= link_to @delivery.connection.destination.name, destination_path(@delivery.connection.destination), class: "link link-hover" %>
+                </td>
+              </tr>
+              <tr>
+                <th>Destination</th>
+                <td>
+                  <%= link_to @delivery.destination.name, destination_path(@delivery.destination), class: "link link-hover" %>
+                </td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td><%= delivery_status_badge(@delivery.status) %></td>
+              </tr>
+              <tr>
+                <th>Attempts</th>
+                <td><%= @delivery.attempt_count %> of <%= @delivery.max_attempts %></td>
+              </tr>
+              <tr>
+                <th>Next Retry</th>
+                <td><%= next_retry_display(@delivery) %></td>
+              </tr>
+              <tr>
+                <th>Created</th>
+                <td><%= @delivery.created_at.strftime("%B %d, %Y at %I:%M:%S %p") %></td>
+              </tr>
+              <tr>
+                <th>Completed</th>
+                <td>
+                  <% if @delivery.completed_at.present? %>
+                    <%= @delivery.completed_at.strftime("%B %d, %Y at %I:%M:%S %p") %>
+                  <% else %>
+                    <span class="text-base-content/50">—</span>
+                  <% end %>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Status Summary</h2>
+        <div class="stats stats-vertical shadow">
+          <div class="stat">
+            <div class="stat-title">Current Status</div>
+            <div class="stat-value text-lg"><%= @delivery.status.titleize %></div>
+          </div>
+          <div class="stat">
+            <div class="stat-title">Attempts Made</div>
+            <div class="stat-value text-lg"><%= @delivery.attempt_count %></div>
+            <div class="stat-desc">of <%= @delivery.max_attempts %> maximum</div>
+          </div>
+          <% if @delivery.can_retry? && !@delivery.success? %>
+            <div class="stat">
+              <div class="stat-title">Retries Remaining</div>
+              <div class="stat-value text-lg"><%= @delivery.max_attempts - @delivery.attempt_count %></div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Delivery Attempts (<%= @attempts.count %>)</h2>
+      <% if @attempts.any? %>
+        <div class="space-y-4 mt-4">
+          <% @attempts.each do |attempt| %>
+            <div class="collapse collapse-arrow bg-base-200">
+              <input type="checkbox" <%= "checked" if attempt == @attempts.last %> />
+              <div class="collapse-title">
+                <div class="flex items-center gap-4">
+                  <span class="font-bold">#<%= attempt.attempt_number %></span>
+                  <%= delivery_status_badge(attempt.status) %>
+                  <% if attempt.response_status.present? %>
+                    <span class="badge <%= attempt.success? ? 'badge-success' : 'badge-error' %>">
+                      HTTP <%= attempt.response_status %>
+                    </span>
+                  <% end %>
+                  <% if attempt.duration_ms.present? %>
+                    <span class="text-sm text-base-content/60"><%= attempt.duration_ms %>ms</span>
+                  <% end %>
+                  <span class="text-sm text-base-content/60 ml-auto">
+                    <%= attempt.attempted_at.strftime("%b %d, %Y at %I:%M:%S %p") %>
+                  </span>
+                </div>
+              </div>
+              <div class="collapse-content">
+                <div class="grid md:grid-cols-2 gap-6 pt-4">
+                  <div>
+                    <h4 class="font-semibold mb-2">Request</h4>
+                    <div class="space-y-2">
+                      <p><strong>URL:</strong> <code class="bg-base-300 px-2 py-1 rounded text-xs break-all"><%= attempt.request_url %></code></p>
+                      <p><strong>Method:</strong> <span class="badge badge-outline"><%= attempt.request_method %></span></p>
+                      <% if attempt.request_headers.present? && attempt.request_headers.any? %>
+                        <div>
+                          <strong>Headers:</strong>
+                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %></pre>
+                        </div>
+                      <% end %>
+                      <% if attempt.request_body.present? %>
+                        <div>
+                          <strong>Body:</strong>
+                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
+                            JSON.pretty_generate(JSON.parse(attempt.request_body))
+                          rescue
+                            attempt.request_body.truncate(2000)
+                          end %></pre>
+                        </div>
+                      <% end %>
+                    </div>
+                  </div>
+
+                  <div>
+                    <h4 class="font-semibold mb-2">Response</h4>
+                    <div class="space-y-2">
+                      <% if attempt.response_status.present? %>
+                        <p>
+                          <strong>Status:</strong>
+                          <span class="badge <%= attempt.success? ? 'badge-success' : 'badge-error' %>">
+                            <%= attempt.response_status %>
+                          </span>
+                        </p>
+                      <% else %>
+                        <p class="text-base-content/60">No response received</p>
+                      <% end %>
+                      <% if attempt.response_headers.present? && attempt.response_headers.any? %>
+                        <div>
+                          <strong>Headers:</strong>
+                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %></pre>
+                        </div>
+                      <% end %>
+                      <% if attempt.response_body.present? %>
+                        <div>
+                          <strong>Body:</strong>
+                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
+                            JSON.pretty_generate(JSON.parse(attempt.response_body))
+                          rescue
+                            attempt.response_body.truncate(2000)
+                          end %></pre>
+                        </div>
+                      <% end %>
+                    </div>
+
+                    <% if attempt.error_message.present? %>
+                      <div class="alert alert-error mt-4">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                          <h3 class="font-bold">Error</h3>
+                          <div class="text-sm"><%= attempt.error_message %></div>
+                          <% if attempt.error_code.present? %>
+                            <div class="text-xs mt-1">Code: <%= attempt.error_code %></div>
+                          <% end %>
+                        </div>
+                      </div>
+                    <% end %>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-8 text-base-content/60">
+          <p>No delivery attempts yet.</p>
+          <p class="text-sm mt-1">Attempts will appear here when the delivery is processed.</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>

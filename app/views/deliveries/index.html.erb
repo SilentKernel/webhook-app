@@ -1,1 +1,112 @@
-<h1>Deliveries</h1>
+<% content_for(:title) { "Deliveries - #{current_organization.name}" } %>
+
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold">Deliveries</h1>
+      <p class="text-base-content/60 mt-1">Track webhook delivery status to your destinations</p>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-lg mb-4">Filters</h2>
+      <%= form_with url: deliveries_path, method: :get, local: true, class: "flex flex-wrap gap-4 items-end" do |f| %>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Status</span>
+          </label>
+          <select name="status" class="select select-bordered w-full max-w-xs">
+            <option value="">All Statuses</option>
+            <option value="pending" <%= "selected" if params[:status] == "pending" %>>Pending</option>
+            <option value="queued" <%= "selected" if params[:status] == "queued" %>>Queued</option>
+            <option value="delivering" <%= "selected" if params[:status] == "delivering" %>>Delivering</option>
+            <option value="success" <%= "selected" if params[:status] == "success" %>>Success</option>
+            <option value="failed" <%= "selected" if params[:status] == "failed" %>>Failed</option>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Destination</span>
+          </label>
+          <select name="destination_id" class="select select-bordered w-full max-w-xs">
+            <option value="">All Destinations</option>
+            <% @destinations.each do |destination| %>
+              <option value="<%= destination.id %>" <%= "selected" if params[:destination_id].to_s == destination.id.to_s %>><%= destination.name %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+
+        <% if params[:status].present? || params[:destination_id].present? %>
+          <div class="form-control">
+            <%= link_to "Clear", deliveries_path, class: "btn btn-ghost" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <% if @deliveries.any? %>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Event</th>
+                <th>Destination</th>
+                <th>Status</th>
+                <th>Attempts</th>
+                <th>Created</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @deliveries.each do |delivery| %>
+                <tr>
+                  <td>
+                    <%= link_to delivery.event.uid.truncate(12), event_path(delivery.event), class: "link link-hover font-mono text-sm" %>
+                  </td>
+                  <td>
+                    <%= link_to delivery.destination.name, destination_path(delivery.destination), class: "link link-hover" %>
+                  </td>
+                  <td><%= delivery_status_badge(delivery.status) %></td>
+                  <td><%= delivery.attempt_count %>/<%= delivery.max_attempts %></td>
+                  <td>
+                    <%= relative_time(delivery.created_at) %>
+                  </td>
+                  <td>
+                    <%= link_to delivery_path(delivery), class: "btn btn-ghost btn-sm", title: "View" do %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium">No deliveries yet</h3>
+          <p class="mt-2 text-base-content/60">Deliveries will appear here when events are forwarded to destinations.</p>
+          <% if params[:status].present? || params[:destination_id].present? %>
+            <div class="mt-6">
+              <%= link_to "Clear Filters", deliveries_path, class: "btn btn-outline" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
