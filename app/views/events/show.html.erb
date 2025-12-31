@@ -1,1 +1,182 @@
-<h1>Event Details</h1>
+<% content_for(:title) { "Event #{@event.uid.truncate(20)} - Events" } %>
+
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <div class="text-sm breadcrumbs">
+        <ul>
+          <li><%= link_to "Events", events_path %></li>
+          <li><%= @event.uid.truncate(20) %></li>
+        </ul>
+      </div>
+      <h1 class="text-3xl font-bold mt-2 font-mono text-lg"><%= @event.uid %></h1>
+    </div>
+    <div class="flex gap-2">
+      <%= button_to "Replay", replay_event_path(@event),
+          method: :post,
+          class: "btn btn-primary",
+          data: { turbo_confirm: "This will re-send the event to all active connections. Continue?" } %>
+    </div>
+  </div>
+
+  <div class="grid lg:grid-cols-2 gap-6">
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Event Details</h2>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <tbody>
+              <tr>
+                <th class="w-1/3">Source</th>
+                <td>
+                  <%= link_to @event.source.name, source_path(@event.source), class: "link link-hover" %>
+                </td>
+              </tr>
+              <tr>
+                <th>Event Type</th>
+                <td>
+                  <% if @event.event_type.present? %>
+                    <span class="badge badge-outline"><%= @event.event_type %></span>
+                  <% else %>
+                    <span class="text-base-content/50">Not specified</span>
+                  <% end %>
+                </td>
+              </tr>
+              <tr>
+                <th>Received</th>
+                <td>
+                  <%= @event.received_at.strftime("%B %d, %Y at %I:%M:%S %p") %>
+                  <span class="text-base-content/60">(<%= time_ago_in_words(@event.received_at) %> ago)</span>
+                </td>
+              </tr>
+              <tr>
+                <th>Source IP</th>
+                <td><code class="bg-base-200 px-2 py-1 rounded text-sm"><%= @event.source_ip || "—" %></code></td>
+              </tr>
+              <tr>
+                <th>Content Type</th>
+                <td><code class="bg-base-200 px-2 py-1 rounded text-sm"><%= @event.content_type || "—" %></code></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <div class="flex justify-between items-center">
+          <h2 class="card-title">Deliveries (<%= @deliveries.count %>)</h2>
+        </div>
+        <% if @deliveries.any? %>
+          <div class="overflow-x-auto">
+            <table class="table table-sm">
+              <thead>
+                <tr>
+                  <th>Destination</th>
+                  <th>Status</th>
+                  <th>Attempts</th>
+                  <th>Last Attempt</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody>
+                <% @deliveries.each do |delivery| %>
+                  <tr>
+                    <td>
+                      <%= link_to delivery.destination.name, destination_path(delivery.destination), class: "link link-hover" %>
+                    </td>
+                    <td><%= delivery_status_badge(delivery.status) %></td>
+                    <td><%= delivery.attempt_count %>/<%= delivery.max_attempts %></td>
+                    <td>
+                      <% last_attempt = delivery.delivery_attempts.order(attempted_at: :desc).first %>
+                      <%= last_attempt ? relative_time(last_attempt.attempted_at) : "—" %>
+                    </td>
+                    <td>
+                      <%= link_to delivery_path(delivery), class: "btn btn-ghost btn-xs" do %>
+                        View
+                      <% end %>
+                    </td>
+                  </tr>
+                <% end %>
+              </tbody>
+            </table>
+          </div>
+        <% else %>
+          <div class="text-center py-8 text-base-content/60">
+            <p>No deliveries yet.</p>
+            <p class="text-sm mt-1">Use the Replay button to send this event to active connections.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title">Headers</h2>
+      <% if @event.headers.present? && @event.headers.any? %>
+        <div tabindex="0" class="collapse collapse-arrow bg-base-200">
+          <input type="checkbox" checked />
+          <div class="collapse-title font-medium">
+            <%= @event.headers.keys.count %> header(s)
+          </div>
+          <div class="collapse-content">
+            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-64"><%= JSON.pretty_generate(@event.headers) rescue @event.headers.to_s %></pre>
+          </div>
+        </div>
+      <% else %>
+        <p class="text-base-content/60">No headers recorded.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <div class="flex justify-between items-center">
+        <h2 class="card-title">Payload</h2>
+        <% if @event.payload.present? %>
+          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!">
+            <input type="hidden" value="<%= @event.payload.to_json %>" data-clipboard-target="source">
+            <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-sm" title="Copy payload">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copy
+            </button>
+          </div>
+        <% end %>
+      </div>
+      <% if @event.payload.present? %>
+        <div tabindex="0" class="collapse collapse-arrow bg-base-200">
+          <input type="checkbox" checked />
+          <div class="collapse-title font-medium">
+            View payload
+          </div>
+          <div class="collapse-content">
+            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-96"><%= JSON.pretty_generate(@event.payload) rescue @event.payload.to_s %></pre>
+          </div>
+        </div>
+      <% else %>
+        <p class="text-base-content/60">No payload recorded.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @event.query_params.present? && @event.query_params.any? %>
+    <div class="card bg-base-100 shadow-xl">
+      <div class="card-body">
+        <h2 class="card-title">Query Parameters</h2>
+        <div tabindex="0" class="collapse collapse-arrow bg-base-200">
+          <input type="checkbox" />
+          <div class="collapse-title font-medium">
+            <%= @event.query_params.keys.count %> parameter(s)
+          </div>
+          <div class="collapse-content">
+            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-64"><%= JSON.pretty_generate(@event.query_params) rescue @event.query_params.to_s %></pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

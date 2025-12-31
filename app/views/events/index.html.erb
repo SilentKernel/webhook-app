@@ -1,1 +1,123 @@
-<h1>Events</h1>
+<% content_for(:title) { "Events - #{current_organization.name}" } %>
+
+<div class="space-y-6">
+  <div class="flex justify-between items-center">
+    <div>
+      <h1 class="text-3xl font-bold">Events</h1>
+      <p class="text-base-content/60 mt-1">Incoming webhooks received by your sources</p>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <h2 class="card-title text-lg mb-4">Filters</h2>
+      <%= form_with url: events_path, method: :get, local: true, class: "flex flex-wrap gap-4 items-end" do |f| %>
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Source</span>
+          </label>
+          <select name="source_id" class="select select-bordered w-full max-w-xs">
+            <option value="">All Sources</option>
+            <% @sources.each do |source| %>
+              <option value="<%= source.id %>" <%= "selected" if params[:source_id].to_s == source.id.to_s %>><%= source.name %></option>
+            <% end %>
+          </select>
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Event Type</span>
+          </label>
+          <input type="text" name="event_type" value="<%= params[:event_type] %>" placeholder="e.g., payment.completed" class="input input-bordered w-full max-w-xs">
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Since</span>
+          </label>
+          <input type="datetime-local" name="since" value="<%= params[:since] %>" class="input input-bordered w-full max-w-xs">
+        </div>
+
+        <div class="form-control">
+          <label class="label">
+            <span class="label-text">Until</span>
+          </label>
+          <input type="datetime-local" name="until" value="<%= params[:until] %>" class="input input-bordered w-full max-w-xs">
+        </div>
+
+        <div class="form-control">
+          <button type="submit" class="btn btn-primary">Apply</button>
+        </div>
+
+        <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? %>
+          <div class="form-control">
+            <%= link_to "Clear", events_path, class: "btn btn-ghost" %>
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl">
+    <div class="card-body">
+      <% if @events.any? %>
+        <div class="overflow-x-auto">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>UID</th>
+                <th>Source</th>
+                <th>Event Type</th>
+                <th>Received</th>
+                <th>Deliveries</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% @events.each do |event| %>
+                <tr>
+                  <td>
+                    <%= link_to event.uid.truncate(12), event_path(event), class: "link link-hover font-mono text-sm" %>
+                  </td>
+                  <td>
+                    <%= link_to event.source.name, source_path(event.source), class: "link link-hover" %>
+                  </td>
+                  <td>
+                    <span class="badge badge-outline"><%= event.event_type || "—" %></span>
+                  </td>
+                  <td>
+                    <%= relative_time(event.received_at) %>
+                  </td>
+                  <td>
+                    <%= delivery_status_summary(event) %>
+                  </td>
+                  <td>
+                    <%= link_to event_path(event), class: "btn btn-ghost btn-sm", title: "View" do %>
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    <% end %>
+                  </td>
+                </tr>
+              <% end %>
+            </tbody>
+          </table>
+        </div>
+      <% else %>
+        <div class="text-center py-12">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+          </svg>
+          <h3 class="mt-4 text-lg font-medium">No events yet</h3>
+          <p class="mt-2 text-base-content/60">Events will appear here when your sources receive webhooks.</p>
+          <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? %>
+            <div class="mt-6">
+              <%= link_to "Clear Filters", events_path, class: "btn btn-outline" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</div>
