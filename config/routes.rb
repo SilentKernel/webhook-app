@@ -66,5 +66,18 @@ Rails.application.routes.draw do
     resources :sources
     resources :destinations
     resources :connections
+
+    # Event and delivery logging
+    resources :events, only: [:index, :show] do
+      member do
+        post :replay
+      end
+    end
+
+    resources :deliveries, only: [:index, :show] do
+      member do
+        post :retry
+      end
+    end
   end
 end
