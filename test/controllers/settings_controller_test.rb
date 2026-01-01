@@ -74,4 +74,30 @@ class SettingsControllerTest < ActionDispatch::IntegrationTest
     @organization.reload
     assert_equal "Acme Corp", @organization.name
   end
+
+  test "owner can update organization timezone" do
+    sign_in @owner
+
+    patch settings_path(locale: :en), params: {
+      organization: { timezone: "Pacific Time (US & Canada)" }
+    }
+
+    assert_redirected_to settings_path(locale: :en)
+
+    @organization.reload
+    assert_equal "Pacific Time (US & Canada)", @organization.timezone
+  end
+
+  test "update fails with invalid timezone" do
+    sign_in @owner
+    original_timezone = @organization.timezone
+
+    patch settings_path(locale: :en), params: {
+      organization: { timezone: "Invalid/Timezone" }
+    }
+
+    assert_response :unprocessable_entity
+    @organization.reload
+    assert_equal original_timezone, @organization.timezone
+  end
 end

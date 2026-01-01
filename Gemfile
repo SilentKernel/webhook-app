@@ -67,8 +67,13 @@ group :test do
   gem "selenium-webdriver"
   # Pin minitest to avoid Rails 8 compatibility issue with minitest 6.x
   gem "minitest", "< 6.0"
+  # Stub HTTP requests in tests
+  gem "webmock"
 end
 
 gem "tailwindcss-rails", "~> 4.4"
 
 gem "redis", "~> 5.0"
+
+# HTTP client for webhook delivery
+gem "faraday"
