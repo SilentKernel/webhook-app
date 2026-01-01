@@ -66,7 +66,7 @@ group :test do
   gem "capybara"
   gem "selenium-webdriver"
   # Pin minitest to avoid Rails 8 compatibility issue with minitest 6.x
-  gem "minitest", "< 6.0"
+  gem "minitest", "< 7.0"
   # Stub HTTP requests in tests
   gem "webmock"
 end
