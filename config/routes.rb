@@ -11,6 +11,9 @@ Rails.application.routes.draw do
   # Health check for load balancers
   get "up" => "rails/health#show", as: :rails_health_check
 
+  # Webhook ingest endpoint (public, no auth required)
+  post "/ingest/:token", to: "ingest#receive", as: :ingest
+
   # Root redirect to default locale
   root to: redirect("/en")
 

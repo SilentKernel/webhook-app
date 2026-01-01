@@ -22,6 +22,6 @@ class SettingsController < ApplicationController
   private
 
   def organization_params
-    params.require(:organization).permit(:name)
+    params.require(:organization).permit(:name, :timezone)
   end
 end

@@ -28,6 +28,13 @@
           <%= f.text_field :name, class: "input input-bordered w-full" %>
         </div>
 
+        <div class="form-control w-full">
+          <%= f.label :timezone, class: "label" do %>
+            <span class="label-text">Timezone</span>
+          <% end %>
+          <%= f.time_zone_select :timezone, nil, {}, class: "select select-bordered w-full" %>
+        </div>
+
         <div class="flex gap-4 mt-6">
           <%= f.submit "Save Changes", class: "btn btn-primary" %>
           <%= link_to "Cancel", dashboard_path, class: "btn btn-ghost" %>

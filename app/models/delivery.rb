@@ -37,9 +37,9 @@ class Delivery < ApplicationRecord
     increment!(:attempt_count)
 
     if can_retry?
-      update!(next_attempt_at: calculate_next_attempt_at)
+      update!(status: :failed, next_attempt_at: calculate_next_attempt_at)
     else
-      update!(status: :failed, completed_at: Time.current)
+      update!(status: :failed, completed_at: Time.current, next_attempt_at: nil)
     end
   end
 
