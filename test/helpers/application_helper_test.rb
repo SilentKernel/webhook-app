@@ -3,6 +3,25 @@
 require "test_helper"
 
 class ApplicationHelperTest < ActionView::TestCase
+  # nav_link_class tests
+  test "nav_link_class returns menu-active when controller matches" do
+    def controller_name
+      "sources"
+    end
+
+    assert_equal "menu-active", nav_link_class(:sources)
+    assert_equal "menu-active", nav_link_class("sources")
+  end
+
+  test "nav_link_class returns empty string when controller does not match" do
+    def controller_name
+      "sources"
+    end
+
+    assert_equal "", nav_link_class(:destinations)
+    assert_equal "", nav_link_class("dashboard")
+  end
+
   # status_badge tests
   test "status_badge returns success badge for active status" do
     result = status_badge("active")

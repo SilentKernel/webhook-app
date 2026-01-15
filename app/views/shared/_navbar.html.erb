@@ -7,15 +7,15 @@
   </div>
   <div class="flex-none gap-2">
     <ul class="menu menu-horizontal px-1">
-      <li><a href="<%= dashboard_path %>">Dashboard</a></li>
-      <li><a href="<%= connections_path %>">Connections</a></li>
-      <li><a href="<%= sources_path %>">Sources</a></li>
-      <li><a href="<%= destinations_path %>">Destinations</a></li>
-      <li><a href="<%= events_path %>">Events</a></li>
-      <li><a href="<%= deliveries_path %>">Deliveries</a></li>
-      <li><a href="<%= team_index_path %>">Team</a></li>
+      <li><a href="<%= dashboard_path %>" class="<%= nav_link_class(:dashboard) %>">Dashboard</a></li>
+      <li><a href="<%= connections_path %>" class="<%= nav_link_class(:connections) %>">Connections</a></li>
+      <li><a href="<%= sources_path %>" class="<%= nav_link_class(:sources) %>">Sources</a></li>
+      <li><a href="<%= destinations_path %>" class="<%= nav_link_class(:destinations) %>">Destinations</a></li>
+      <li><a href="<%= events_path %>" class="<%= nav_link_class(:events) %>">Events</a></li>
+      <li><a href="<%= deliveries_path %>" class="<%= nav_link_class(:deliveries) %>">Deliveries</a></li>
+      <li><a href="<%= team_index_path %>" class="<%= nav_link_class(:team) %>">Team</a></li>
       <% if owner? %>
-        <li><a href="<%= settings_path %>">Settings</a></li>
+        <li><a href="<%= settings_path %>" class="<%= nav_link_class(:settings) %>">Settings</a></li>
       <% end %>
     </ul>
     <div class="dropdown dropdown-end">
