@@ -14,3 +14,75 @@
   --menu-active-bg: color-mix(in oklab, var(--color-base-content) 15%, transparent);
   --menu-active-fg: var(--color-base-content);
 }
+
+/* ==========================================================================
+   HotwireCombobox - DaisyUI Integration
+   Override default hotwire_combobox styles to match DaisyUI input/menu patterns
+   Note: Using !important because combobox_style_tag loads after this stylesheet
+   ========================================================================== */
+
+/* Override CSS variables for DaisyUI theme compatibility */
+:root {
+  --hw-combobox-width: 100% !important;
+  --hw-border-radius: var(--radius-field, 0.5rem) !important;
+  --hw-focus-color: var(--color-primary, #570df8) !important;
+}
+
+/* Root combobox container - make it full width (default is inline-flex) */
+.hw-combobox {
+  display: flex !important;
+  width: 100% !important;
+}
+
+/* Main wrapper - match DaisyUI input input-bordered styling */
+.hw-combobox__main__wrapper {
+  background-color: var(--color-base-100) !important;
+  border: 1px solid color-mix(in oklab, var(--color-base-content) 20%, transparent) !important;
+  border-radius: var(--radius-field, 0.5rem) !important;
+  height: 3rem !important;
+  padding-block: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+.hw-combobox__main__wrapper:focus-within {
+  outline: 2px solid var(--color-primary, #570df8) !important;
+  outline-offset: 2px !important;
+  box-shadow: none !important;
+}
+
+/* Input element - ensure it fills the wrapper */
+.hw-combobox__input {
+  height: 100% !important;
+  padding-inline-start: 1rem !important;
+  background: transparent !important;
+}
+
+/* Listbox dropdown - match DaisyUI dropdown-content menu styling */
+.hw-combobox__listbox {
+  background-color: var(--color-base-100) !important;
+  border: 1px solid color-mix(in oklab, var(--color-base-content) 20%, transparent) !important;
+  border-radius: var(--radius-box, 0.5rem) !important;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1) !important;
+  margin-top: 0.5rem !important;
+  padding: 0.5rem !important;
+}
+
+/* Options - match DaisyUI menu item styling */
+.hw-combobox__option {
+  border-radius: var(--radius-field, 0.25rem) !important;
+  padding: 0.5rem 1rem !important;
+  cursor: pointer !important;
+  background-color: var(--color-base-100) !important;
+}
+
+.hw-combobox__option:hover,
+.hw-combobox__option--navigated {
+  background-color: color-mix(in oklab, var(--color-base-content) 10%, transparent) !important;
+}
+
+.hw-combobox__option--selected {
+  background-color: color-mix(in oklab, var(--color-primary) 15%, transparent) !important;
+  color: var(--color-primary) !important;
+}
