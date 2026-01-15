@@ -80,3 +80,6 @@ gem "redis", "~> 5.0"
 
 # HTTP client for webhook delivery
 gem "faraday"
+
+# Autocomplete combobox for forms [https://github.com/josefarias/hotwire_combobox]
+gem "hotwire_combobox", "~> 0.4.0"
