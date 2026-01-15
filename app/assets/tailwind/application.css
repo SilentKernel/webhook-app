@@ -47,16 +47,19 @@
 }
 
 .hw-combobox__main__wrapper:focus-within {
-  outline: 2px solid var(--color-primary, #570df8) !important;
-  outline-offset: 2px !important;
+  border-color: transparent !important;
+  outline: 2px solid var(--color-base-content) !important;
+  outline-offset: 0 !important;
   box-shadow: none !important;
 }
 
-/* Input element - ensure it fills the wrapper */
+/* Input element - ensure it fills the wrapper and remove inner border */
 .hw-combobox__input {
   height: 100% !important;
   padding-inline-start: 1rem !important;
   background: transparent !important;
+  border: none !important;
+  outline: none !important;
 }
 
 /* Listbox dropdown - match DaisyUI dropdown-content menu styling */
