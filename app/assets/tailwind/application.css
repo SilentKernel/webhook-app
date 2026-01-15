@@ -8,3 +8,9 @@
 @plugin "./daisyui-theme.mjs"{
   /* custom theme here */
 }
+
+/* Override navbar menu active (click) state to use subtle color instead of dark neutral */
+.navbar .menu {
+  --menu-active-bg: color-mix(in oklab, var(--color-base-content) 15%, transparent);
+  --menu-active-fg: var(--color-base-content);
+}

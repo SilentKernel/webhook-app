@@ -1,4 +1,9 @@
 module ApplicationHelper
+  # Returns "menu-active" if the current controller matches, for navbar highlighting
+  def nav_link_class(controller)
+    controller_name == controller.to_s ? "menu-active" : ""
+  end
+
   def status_badge(status)
     colors = {
       "active" => "badge-success",
