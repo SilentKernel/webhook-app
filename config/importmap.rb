@@ -4,6 +4,7 @@ pin "application"
 pin "@hotwired/turbo-rails", to: "turbo.min.js"
 pin "@hotwired/stimulus", to: "@hotwired--stimulus.js" # @3.2.2
 pin "@hotwired/stimulus-loading", to: "stimulus-loading.js"
+pin "@rolemodel/turbo-confirm", to: "@rolemodel--turbo-confirm.js" # @2.2.0
 
 # Not loaded on page loading
 pin_all_from "app/javascript/controllers", under: "controllers", preload: false
