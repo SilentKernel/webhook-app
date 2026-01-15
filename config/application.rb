@@ -30,5 +30,8 @@ module WebhookApp
     # Default locale
     config.i18n.default_locale = :en
     config.i18n.available_locales = [:en]
+
+    # If we need to handle image later, has_one_attached or has_many_attached, or actiontext
+    config.active_storage.variant_processor = :disabled
   end
 end
