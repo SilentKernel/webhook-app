@@ -3,31 +3,31 @@
 stripe_production:
   organization: acme
   source_type: stripe
+  verification_type: stripe
   name: Stripe Production
   ingest_token: stripe_prod_token_123456789012
-  verification_type: stripe
   status: 0
 
 github_webhook:
   organization: acme
   source_type: github
+  verification_type: github
   name: GitHub Webhook
   ingest_token: github_webhook_token_12345678
-  verification_type: github
   status: 0
 
 paused_source:
   organization: acme
   source_type: hmac
+  verification_type: hmac
   name: Paused Source
   ingest_token: paused_source_token_12345678
-  verification_type: hmac
   status: 1
 
 other_org_source:
   organization: other
   source_type: stripe
+  verification_type: stripe
   name: Other Org Source
   ingest_token: other_org_source_token_12345
-  verification_type: stripe
   status: 0

@@ -8,20 +8,38 @@
 #     MovieGenre.find_or_create_by!(name: genre_name)
 #   end
 
+# VerificationType seeds - verification methods for webhook signatures
+verification_types = [
+  { name: "None / Custom", slug: "none", description: "No signature verification", position: 0 },
+  { name: "Stripe", slug: "stripe", description: "Stripe webhook signature verification", position: 1 },
+  { name: "Shopify", slug: "shopify", description: "Shopify HMAC verification", position: 2 },
+  { name: "GitHub", slug: "github", description: "GitHub webhook signature", position: 3 },
+  { name: "Generic HMAC", slug: "hmac", description: "Generic HMAC-SHA256 verification", position: 4 }
+]
+
+verification_types.each do |attrs|
+  VerificationType.find_or_create_by!(slug: attrs[:slug]) do |vt|
+    vt.name = attrs[:name]
+    vt.description = attrs[:description]
+    vt.position = attrs[:position]
+  end
+end
+
 # SourceType seeds - preset configurations for common webhook providers
 source_types = [
-  { name: "Stripe", slug: "stripe", verification_type: "stripe" },
-  { name: "Shopify", slug: "shopify", verification_type: "shopify" },
-  { name: "GitHub", slug: "github", verification_type: "github" },
-  { name: "Twilio", slug: "twilio", verification_type: "hmac" },
-  { name: "Generic HMAC", slug: "hmac", verification_type: "hmac" },
-  { name: "None / Custom", slug: "none", verification_type: "none" }
+  { name: "Stripe", slug: "stripe", verification_type_slug: "stripe" },
+  { name: "Shopify", slug: "shopify", verification_type_slug: "shopify" },
+  { name: "GitHub", slug: "github", verification_type_slug: "github" },
+  { name: "Twilio", slug: "twilio", verification_type_slug: "hmac" },
+  { name: "Generic HMAC", slug: "hmac", verification_type_slug: "hmac" },
+  { name: "None / Custom", slug: "none", verification_type_slug: "none" }
 ]
 
 source_types.each do |attrs|
+  vtype = VerificationType.find_by!(slug: attrs[:verification_type_slug])
   SourceType.find_or_create_by!(slug: attrs[:slug]) do |st|
     st.name = attrs[:name]
-    st.verification_type = attrs[:verification_type]
+    st.verification_type = vtype
   end
 end
 

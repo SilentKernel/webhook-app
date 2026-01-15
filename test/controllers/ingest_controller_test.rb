@@ -5,7 +5,7 @@ require "test_helper"
 class IngestControllerTest < ActionDispatch::IntegrationTest
   setup do
     @source = sources(:stripe_production)
-    @source.update!(verification_type: "none", status: :active)
+    @source.update!(verification_type: verification_types(:none), status: :active)
   end
 
   test "receives webhook with valid token" do
@@ -147,7 +147,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
   end
 
   test "returns 401 for invalid stripe signature" do
-    @source.update!(verification_type: "stripe", verification_secret: "whsec_test_secret")
+    @source.update!(verification_type: verification_types(:stripe), verification_secret: "whsec_test_secret")
 
     post ingest_url(token: @source.ingest_token),
          params: { type: "test.event" }.to_json,
@@ -163,7 +163,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
   test "accepts valid stripe signature" do
     secret = "whsec_test_secret"
-    @source.update!(verification_type: "stripe", verification_secret: secret)
+    @source.update!(verification_type: verification_types(:stripe), verification_secret: secret)
 
     payload = { type: "test.event" }.to_json
     timestamp = Time.now.to_i

@@ -44,7 +44,7 @@ class IngestController < ActionController::Base
   private
 
   def verify_signature
-    case @source.verification_type
+    case @source.verification_type_slug
     when "none"
       true
     when "stripe"

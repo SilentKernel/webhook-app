@@ -1,6 +1,7 @@
 class Source < ApplicationRecord
   belongs_to :organization
   belongs_to :source_type, optional: true
+  belongs_to :verification_type
   has_many :connections, dependent: :destroy
   has_many :events, dependent: :destroy
 
@@ -10,14 +11,17 @@ class Source < ApplicationRecord
 
   validates :name, presence: true
   validates :ingest_token, presence: true, uniqueness: true
-  validates :verification_type, presence: true,
-    inclusion: { in: %w[stripe shopify github hmac none] }
 
   before_validation :generate_ingest_token, on: :create
   before_validation :set_verification_from_source_type, on: :create
 
   def ingest_url
     "/ingest/#{ingest_token}"
+  end
+
+  # Used by SignatureVerifier to determine which verification method to use
+  def verification_type_slug
+    verification_type&.slug || "none"
   end
 
   private
@@ -27,7 +31,7 @@ class Source < ApplicationRecord
   end
 
   def set_verification_from_source_type
-    if source_type.present? && verification_type.blank?
+    if source_type.present? && verification_type_id.blank?
       self.verification_type = source_type.verification_type
     end
   end

@@ -48,7 +48,7 @@ class SourcesControllerTest < ActionDispatch::IntegrationTest
         source: {
           name: "New Source",
           source_type_id: @source_type.id,
-          verification_type: "stripe",
+          verification_type_id: verification_types(:stripe).id,
           status: "active"
         }
       }
@@ -64,7 +64,7 @@ class SourcesControllerTest < ActionDispatch::IntegrationTest
       post sources_url(locale: :en), params: {
         source: {
           name: "",
-          verification_type: "invalid"
+          verification_type_id: nil
         }
       }
     end

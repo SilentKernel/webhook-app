@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_15_170053) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -148,8 +148,9 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
     t.string "name", null: false
     t.string "slug", null: false
     t.datetime "updated_at", null: false
-    t.string "verification_type", null: false
+    t.bigint "verification_type_id", null: false
     t.index ["slug"], name: "index_source_types_on_slug", unique: true
+    t.index ["verification_type_id"], name: "index_source_types_on_verification_type_id"
   end
 
   create_table "sources", force: :cascade do |t|
@@ -161,11 +162,12 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
     t.integer "status", default: 0, null: false
     t.datetime "updated_at", null: false
     t.string "verification_secret"
-    t.string "verification_type", null: false
+    t.bigint "verification_type_id", null: false
     t.index ["ingest_token"], name: "index_sources_on_ingest_token", unique: true
     t.index ["organization_id"], name: "index_sources_on_organization_id"
     t.index ["source_type_id"], name: "index_sources_on_source_type_id"
     t.index ["status"], name: "index_sources_on_status"
+    t.index ["verification_type_id"], name: "index_sources_on_verification_type_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -187,6 +189,19 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
+  create_table "verification_types", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "name", null: false
+    t.integer "position", default: 0, null: false
+    t.string "slug", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_verification_types_on_active"
+    t.index ["position"], name: "index_verification_types_on_position"
+    t.index ["slug"], name: "index_verification_types_on_slug", unique: true
+  end
+
   add_foreign_key "connections", "destinations"
   add_foreign_key "connections", "sources"
   add_foreign_key "deliveries", "connections"
@@ -199,6 +214,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_30_200607) do
   add_foreign_key "invitations", "users", column: "invited_by_id"
   add_foreign_key "memberships", "organizations"
   add_foreign_key "memberships", "users"
+  add_foreign_key "source_types", "verification_types"
   add_foreign_key "sources", "organizations"
   add_foreign_key "sources", "source_types"
+  add_foreign_key "sources", "verification_types"
 end

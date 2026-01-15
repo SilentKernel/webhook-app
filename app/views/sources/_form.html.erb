@@ -1,5 +1,6 @@
-<% verification_types_map = @source_types.each_with_object({}) { |st, h| h[st.id.to_s] = st.verification_type } %>
-<%= form_with model: source, url: source.persisted? ? source_path(source) : sources_path, class: "space-y-4", data: { controller: "source-form", source_form_verification_types_value: verification_types_map.to_json } do |f| %>
+<% verification_types_map = @source_types.each_with_object({}) { |st, h| h[st.id.to_s] = st.verification_type_id } %>
+<% verification_type_names = @verification_types.each_with_object({}) { |vt, h| h[vt.id.to_s] = vt.name } %>
+<%= form_with model: source, url: source.persisted? ? source_path(source) : sources_path, class: "space-y-4", data: { controller: "source-form", source_form_verification_types_value: verification_types_map.to_json, source_form_verification_type_names_value: verification_type_names.to_json } do |f| %>
   <% if source.errors.any? %>
     <div class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
@@ -26,23 +27,28 @@
     <%= f.label :source_type_id, class: "label" do %>
       <span class="label-text">Source Type</span>
     <% end %>
-    <%= f.select :source_type_id, @source_types.map { |st| [st.name, st.id] }, { include_blank: "Custom (no preset)" }, { class: "select select-bordered w-full", data: { source_form_target: "sourceType", action: "change->source-form#sourceTypeChanged" } } %>
+    <%= f.combobox :source_type_id,
+        @source_types.map { |st| [st.name, st.id] },
+        id: "source-source-type",
+        include_blank: "Custom (no preset)",
+        input: { placeholder: "Custom (no preset)" },
+        data: {
+          source_form_target: "sourceType",
+          action: "hw-combobox:selection->source-form#sourceTypeChanged"
+        } %>
     <label class="label">
       <span class="label-text-alt text-base-content/60">Select a preset to auto-configure verification settings</span>
     </label>
   </div>
 
   <div class="form-control w-full">
-    <%= f.label :verification_type, class: "label" do %>
+    <%= f.label :verification_type_id, class: "label" do %>
       <span class="label-text">Verification Type <span class="text-error">*</span></span>
     <% end %>
-    <%= f.select :verification_type, [
-      ["None", "none"],
-      ["Stripe", "stripe"],
-      ["Shopify", "shopify"],
-      ["GitHub", "github"],
-      ["HMAC", "hmac"]
-    ], {}, { class: "select select-bordered w-full", data: { source_form_target: "verificationType" } } %>
+    <%= f.combobox :verification_type_id,
+        @verification_types.map { |vt| [vt.name, vt.id] },
+        id: "source-verification-type",
+        data: { source_form_target: "verificationType" } %>
     <label class="label">
       <span class="label-text-alt text-base-content/60">How incoming webhooks should be verified</span>
     </label>

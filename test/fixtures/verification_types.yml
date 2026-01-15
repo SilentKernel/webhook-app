@@ -1,0 +1,43 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+none:
+  name: None / Custom
+  slug: none
+  description: No signature verification
+  active: true
+  position: 0
+
+stripe:
+  name: Stripe
+  slug: stripe
+  description: Stripe webhook signature verification
+  active: true
+  position: 1
+
+shopify:
+  name: Shopify
+  slug: shopify
+  description: Shopify HMAC verification
+  active: true
+  position: 2
+
+github:
+  name: GitHub
+  slug: github
+  description: GitHub webhook signature
+  active: true
+  position: 3
+
+hmac:
+  name: Generic HMAC
+  slug: hmac
+  description: Generic HMAC-SHA256 verification
+  active: true
+  position: 4
+
+inactive_vtype:
+  name: Inactive Verification
+  slug: inactive_vtype
+  description: An inactive verification type for testing
+  active: false
+  position: 99

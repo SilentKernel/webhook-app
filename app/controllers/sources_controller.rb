@@ -4,7 +4,7 @@ class SourcesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
   before_action :set_source, only: [ :show, :edit, :update, :destroy ]
-  before_action :load_source_types, only: [ :new, :edit, :create, :update ]
+  before_action :load_form_data, only: [ :new, :edit, :create, :update ]
 
   def index
     @sources = current_organization.sources.includes(:source_type)
@@ -15,7 +15,8 @@ class SourcesController < ApplicationController
   end
 
   def new
-    @source = current_organization.sources.build
+    none_type = VerificationType.find_by(slug: "none")
+    @source = current_organization.sources.build(verification_type: none_type)
   end
 
   def create
@@ -50,11 +51,12 @@ class SourcesController < ApplicationController
     @source = current_organization.sources.find(params[:id])
   end
 
-  def load_source_types
-    @source_types = SourceType.active
+  def load_form_data
+    @source_types = SourceType.active.includes(:verification_type)
+    @verification_types = VerificationType.active
   end
 
   def source_params
-    params.require(:source).permit(:name, :source_type_id, :verification_type, :verification_secret, :status)
+    params.require(:source).permit(:name, :source_type_id, :verification_type_id, :verification_secret, :status)
   end
 end
