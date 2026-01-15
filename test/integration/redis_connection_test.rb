@@ -3,7 +3,8 @@ require "redis"
 
 class RedisConnectionTest < ActionDispatch::IntegrationTest
   setup do
-    @redis = Redis.new(host: "localhost", port: 6380)
+    redis_url = ENV.fetch("REDIS_URL", "redis://localhost:6379/0")
+    @redis = Redis.new(url: redis_url)
   end
 
   teardown do
