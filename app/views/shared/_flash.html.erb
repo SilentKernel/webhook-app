@@ -7,7 +7,13 @@
         when :warning then "alert-warning"
         else "alert-info"
       end %>
-      <div class="alert <%= alert_class %> shadow-lg">
+      <div
+        data-controller="notification"
+        data-notification-delay-value="10000"
+        class="alert <%= alert_class %> shadow-lg transition-opacity duration-300"
+        data-transition-leave-from="opacity-100"
+        data-transition-leave-to="opacity-0"
+      >
         <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
           <% if type.to_sym == :notice || type.to_sym == :success %>
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -18,6 +24,16 @@
           <% end %>
         </svg>
         <span><%= message %></span>
+        <button
+          type="button"
+          data-action="notification#hide"
+          class="ml-auto p-1 rounded-full opacity-70 hover:opacity-100 hover:bg-black/10 transition-opacity"
+          aria-label="Dismiss"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
       </div>
     <% end %>
   </div>
