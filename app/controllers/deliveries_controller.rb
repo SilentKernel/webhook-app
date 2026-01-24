@@ -3,7 +3,7 @@
 class DeliveriesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
-  before_action :set_delivery, only: [ :show, :replay ]
+  before_action :set_delivery, only: [ :show ]
 
   def index
     @destinations = current_organization.destinations
@@ -21,25 +21,6 @@ class DeliveriesController < ApplicationController
 
   def show
     @attempts = @delivery.delivery_attempts.order(attempt_number: :asc)
-  end
-
-  def replay
-    unless @delivery.can_replay?
-      redirect_to delivery_path(@delivery), alert: "This delivery cannot be replayed."
-      return
-    end
-
-    new_delivery = Delivery.create!(
-      event: @delivery.event,
-      connection: @delivery.connection,
-      destination: @delivery.destination,
-      status: :pending,
-      max_attempts: @delivery.max_attempts
-    )
-
-    DeliverWebhookJob.perform_later(new_delivery.id)
-
-    redirect_to delivery_path(new_delivery), notice: "A new delivery has been created."
   end
 
   private

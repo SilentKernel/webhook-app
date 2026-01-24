@@ -88,10 +88,6 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :deliveries, only: [:index, :show] do
-      member do
-        post :replay
-      end
-    end
+    resources :deliveries, only: [:index, :show]
   end
 end
