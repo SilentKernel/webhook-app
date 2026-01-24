@@ -89,3 +89,13 @@
   background-color: color-mix(in oklab, var(--color-primary) 15%, transparent) !important;
   color: var(--color-primary) !important;
 }
+
+/* ==========================================================================
+   Modal - Prevent Backdrop Flash on Turbo Frame Load
+   DaisyUI modals use @starting-style for animations, but Turbo Frame
+   injection can cause a brief flash before transitions initialize.
+   This ensures the modal is completely hidden until showModal() runs.
+   ========================================================================== */
+turbo-frame#modal dialog.modal:not([open]) {
+  display: none;
+}
