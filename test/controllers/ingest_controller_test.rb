@@ -245,4 +245,54 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
   end
+
+  test "returns 413 for payload exceeding 1 MB" do
+    large_payload = "x" * (1.megabyte + 1)
+
+    assert_no_difference "Event.count" do
+      post ingest_url(token: @source.ingest_token),
+           params: large_payload,
+           headers: { "Content-Type" => "text/plain" }
+    end
+
+    assert_response :content_too_large
+    json_response = JSON.parse(response.body)
+    assert_equal "Payload too large", json_response["error"]
+    assert_equal "Request body exceeds maximum allowed size of 1 MB", json_response["message"]
+  end
+
+  test "accepts payload exactly at 1 MB limit" do
+    payload = "x" * 1.megabyte
+
+    assert_difference "Event.count", 1 do
+      post ingest_url(token: @source.ingest_token),
+           params: payload,
+           headers: { "Content-Type" => "text/plain" }
+    end
+
+    assert_response :accepted
+  end
+
+  test "accepts payload under 1 MB limit" do
+    payload = "x" * 1000
+
+    assert_difference "Event.count", 1 do
+      post ingest_url(token: @source.ingest_token),
+           params: payload,
+           headers: { "Content-Type" => "text/plain" }
+    end
+
+    assert_response :accepted
+  end
+
+  test "rejects large payload before checking token" do
+    large_payload = "x" * (1.megabyte + 1)
+
+    # Use an invalid token - should still get 413, not 404
+    post ingest_url(token: "invalid_token"),
+         params: large_payload,
+         headers: { "Content-Type" => "text/plain" }
+
+    assert_response :content_too_large
+  end
 end

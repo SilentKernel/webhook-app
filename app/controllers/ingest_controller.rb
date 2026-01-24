@@ -7,7 +7,17 @@ class IngestController < ActionController::Base
   # No CSRF protection needed for webhooks
   skip_forgery_protection
 
+  MAX_PAYLOAD_SIZE = 1.megabyte # 1,048,576 bytes
+
   def receive
+    # Check payload size first (before any other processing)
+    if payload_too_large?
+      render json: {
+        error: "Payload too large",
+        message: "Request body exceeds maximum allowed size of 1 MB"
+      }, status: :content_too_large
+      return
+    end
     # Find source by ingest token
     @source = Source.find_by(ingest_token: params[:token])
 
@@ -42,6 +52,15 @@ class IngestController < ActionController::Base
   end
 
   private
+
+  def payload_too_large?
+    # Check Content-Length header first (fast path)
+    content_length = request.content_length.to_i
+    return true if content_length > MAX_PAYLOAD_SIZE
+
+    # Also check actual body size (in case Content-Length is missing or spoofed)
+    request.raw_post.bytesize > MAX_PAYLOAD_SIZE
+  end
 
   def verify_signature
     case @source.verification_type_slug
