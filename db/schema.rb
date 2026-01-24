@@ -84,6 +84,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_200001) do
     t.integer "auth_type", default: 0, null: false
     t.string "auth_value"
     t.datetime "created_at", null: false
+    t.integer "expected_status_code"
     t.jsonb "headers", default: {}
     t.string "http_method", default: "POST"
     t.integer "max_delivery_rate"

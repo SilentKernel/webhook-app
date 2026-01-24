@@ -14,4 +14,7 @@ class Destination < ApplicationRecord
   validates :http_method, inclusion: { in: %w[POST PUT PATCH GET DELETE] }
   validates :timeout_seconds, numericality: { greater_than: 0 }, allow_nil: true
   validates :max_delivery_rate, numericality: { greater_than: 0 }, allow_nil: true
+  validates :expected_status_code,
+    numericality: { only_integer: true, greater_than_or_equal_to: 100, less_than_or_equal_to: 599 },
+    allow_nil: true
 end
