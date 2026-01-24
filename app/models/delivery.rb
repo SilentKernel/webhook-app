@@ -30,6 +30,7 @@ class Delivery < ApplicationRecord
   end
 
   def mark_success!
+    increment!(:attempt_count)
     update!(status: :success, completed_at: Time.current)
   end
 

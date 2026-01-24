@@ -183,12 +183,14 @@ class DeliveryTest < ActiveSupport::TestCase
     assert_not delivery.can_retry?
   end
 
-  test "mark_success! updates status and completed_at" do
+  test "mark_success! updates status, completed_at, and increments attempt_count" do
     delivery = deliveries(:pending_delivery)
+    original_count = delivery.attempt_count
     freeze_time do
       delivery.mark_success!
       assert delivery.success?
       assert_equal Time.current, delivery.completed_at
+      assert_equal original_count + 1, delivery.attempt_count
     end
   end
 
