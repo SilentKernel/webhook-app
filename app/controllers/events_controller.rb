@@ -7,17 +7,17 @@ class EventsController < ApplicationController
 
   def index
     @sources = current_organization.sources
-    @events = Event.joins(:source)
-                   .where(sources: { organization_id: current_organization.id })
-                   .includes(:source, :deliveries)
-                   .recent
+    events = Event.joins(:source)
+                  .where(sources: { organization_id: current_organization.id })
+                  .includes(:source, :deliveries)
+                  .recent
 
-    @events = @events.where(source_id: params[:source_id]) if params[:source_id].present?
-    @events = @events.by_event_type(params[:event_type]) if params[:event_type].present?
-    @events = @events.since(Time.zone.parse(params[:since])) if params[:since].present?
-    @events = @events.until(Time.zone.parse(params[:until])) if params[:until].present?
+    events = events.where(source_id: params[:source_id]) if params[:source_id].present?
+    events = events.by_event_type(params[:event_type]) if params[:event_type].present?
+    events = events.since(Time.zone.parse(params[:since])) if params[:since].present?
+    events = events.until(Time.zone.parse(params[:until])) if params[:until].present?
 
-    @events = @events.limit(50)
+    @pagy, @events = pagy(:offset, events)
   end
 
   def show

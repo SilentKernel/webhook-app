@@ -17,6 +17,7 @@
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
       <% if @sources.any? %>
+        <%= render "shared/pagination", position: :top %>
         <div class="overflow-x-auto">
           <table class="table">
             <thead>
@@ -76,6 +77,8 @@
             </tbody>
           </table>
         </div>
+
+        <%= render "shared/pagination", position: :bottom %>
       <% else %>
         <div class="text-center py-12">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 mx-auto text-base-content/30" fill="none" viewBox="0 0 24 24" stroke="currentColor">

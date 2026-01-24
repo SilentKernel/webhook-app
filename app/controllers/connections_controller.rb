@@ -7,9 +7,11 @@ class ConnectionsController < ApplicationController
   before_action :load_sources_and_destinations, only: [ :new, :edit, :create, :update ]
 
   def index
-    @connections = Connection.joins(:source)
-                             .where(sources: { organization_id: current_organization.id })
-                             .includes(:source, :destination)
+    connections = Connection.joins(:source)
+                            .where(sources: { organization_id: current_organization.id })
+                            .includes(:source, :destination)
+                            .order(created_at: :desc)
+    @pagy, @connections = pagy(:offset, connections)
   end
 
   def show

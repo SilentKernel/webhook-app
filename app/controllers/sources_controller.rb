@@ -7,7 +7,7 @@ class SourcesController < ApplicationController
   before_action :load_form_data, only: [ :new, :edit, :create, :update ]
 
   def index
-    @sources = current_organization.sources.includes(:source_type)
+    @pagy, @sources = pagy(:offset, current_organization.sources.includes(:source_type).order(created_at: :desc))
   end
 
   def show

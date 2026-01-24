@@ -1,0 +1,48 @@
+<% position ||= :bottom %>
+<% if @pagy.last > 1 %>
+  <div class="flex flex-col sm:flex-row justify-between items-center gap-4 <%= position == :top ? 'mb-6' : 'mt-6' %>">
+    <div class="text-sm text-base-content/60">
+      Showing <%= @pagy.from %>-<%= @pagy.to %> of <%= @pagy.count %> results
+    </div>
+
+    <div class="join">
+      <% if @pagy.previous %>
+        <%= link_to @pagy.page_url(@pagy.previous), class: "join-item btn btn-sm" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        <% end %>
+      <% else %>
+        <span class="join-item btn btn-sm btn-disabled">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+          </svg>
+        </span>
+      <% end %>
+
+      <% pagination_series(@pagy).each do |item| %>
+        <% if item == :gap %>
+          <span class="join-item btn btn-sm btn-disabled">...</span>
+        <% elsif item.is_a?(Integer) %>
+          <%= link_to item, @pagy.page_url(item), class: "join-item btn btn-sm" %>
+        <% elsif item.is_a?(String) %>
+          <span class="join-item btn btn-sm btn-active"><%= item %></span>
+        <% end %>
+      <% end %>
+
+      <% if @pagy.next %>
+        <%= link_to @pagy.page_url(@pagy.next), class: "join-item btn btn-sm" do %>
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        <% end %>
+      <% else %>
+        <span class="join-item btn btn-sm btn-disabled">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+          </svg>
+        </span>
+      <% end %>
+    </div>
+  </div>
+<% end %>

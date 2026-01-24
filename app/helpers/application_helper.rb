@@ -1,4 +1,42 @@
 module ApplicationHelper
+  # Generate page series for pagination (similar to old Pagy behavior)
+  # Returns an array of page numbers, :gap symbols, and current page as string
+  def pagination_series(pagy, size: 7)
+    return [] if pagy.last <= 1
+
+    page = pagy.page
+    last = pagy.last
+    series = []
+
+    # Calculate which pages to show
+    if last <= size
+      # Show all pages
+      series = (1..last).to_a
+    else
+      # Show first, last, and pages around current
+      half = (size - 3) / 2  # Leave room for first, last, and one gap
+      left = [page - half, 2].max
+      right = [page + half, last - 1].min
+
+      # Adjust if near edges
+      if left <= 2
+        left = 2
+        right = [size - 2, last - 1].min
+      elsif right >= last - 1
+        right = last - 1
+        left = [last - size + 3, 2].max
+      end
+
+      series << 1
+      series << :gap if left > 2
+      (left..right).each { |p| series << p }
+      series << :gap if right < last - 1
+      series << last
+    end
+
+    series.map { |item| item == page ? item.to_s : item }
+  end
+
   # Returns "menu-active" if the current controller matches, for navbar highlighting
   def nav_link_class(controller)
     controller_name == controller.to_s ? "menu-active" : ""

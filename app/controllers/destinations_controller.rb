@@ -6,7 +6,7 @@ class DestinationsController < ApplicationController
   before_action :set_destination, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @destinations = current_organization.destinations
+    @pagy, @destinations = pagy(:offset, current_organization.destinations.order(created_at: :desc))
   end
 
   def show
