@@ -84,7 +84,7 @@
 
   <div class="divider">Advanced Settings</div>
 
-  <div class="grid md:grid-cols-2 gap-4">
+  <div class="grid md:grid-cols-3 gap-4">
     <div class="form-control w-full">
       <%= f.label :timeout_seconds, class: "label" do %>
         <span class="label-text">Timeout (seconds)</span>
@@ -102,6 +102,16 @@
       <%= f.number_field :max_delivery_rate, class: "input input-bordered w-full", placeholder: "Leave empty for unlimited", min: 1 %>
       <label class="label">
         <span class="label-text-alt text-base-content/60">Rate limit for webhook delivery</span>
+      </label>
+    </div>
+
+    <div class="form-control w-full">
+      <%= f.label :expected_status_code, class: "label" do %>
+        <span class="label-text">Expected Status Code</span>
+      <% end %>
+      <%= f.number_field :expected_status_code, class: "input input-bordered w-full", placeholder: "e.g., 200, 204", min: 100, max: 599 %>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Leave empty to accept any 2xx</span>
       </label>
     </div>
   </div>

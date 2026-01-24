@@ -235,4 +235,69 @@ class DestinationTest < ActiveSupport::TestCase
     destination.save!
     assert_equal 30, destination.timeout_seconds
   end
+
+  test "expected_status_code can be nil" do
+    destination = Destination.new(
+      organization: organizations(:acme),
+      name: "My API",
+      url: "https://api.example.com/webhooks",
+      expected_status_code: nil
+    )
+    assert destination.valid?
+  end
+
+  test "expected_status_code accepts valid HTTP status codes" do
+    [100, 200, 204, 301, 404, 500, 599].each do |code|
+      destination = Destination.new(
+        organization: organizations(:acme),
+        name: "My API",
+        url: "https://api.example.com/webhooks",
+        expected_status_code: code
+      )
+      assert destination.valid?, "Expected #{code} to be a valid status code"
+    end
+  end
+
+  test "expected_status_code rejects codes below 100" do
+    destination = Destination.new(
+      organization: organizations(:acme),
+      name: "My API",
+      url: "https://api.example.com/webhooks",
+      expected_status_code: 99
+    )
+    assert_not destination.valid?
+    assert destination.errors[:expected_status_code].any?
+  end
+
+  test "expected_status_code rejects codes above 599" do
+    destination = Destination.new(
+      organization: organizations(:acme),
+      name: "My API",
+      url: "https://api.example.com/webhooks",
+      expected_status_code: 600
+    )
+    assert_not destination.valid?
+    assert destination.errors[:expected_status_code].any?
+  end
+
+  test "expected_status_code must be an integer" do
+    destination = Destination.new(
+      organization: organizations(:acme),
+      name: "My API",
+      url: "https://api.example.com/webhooks",
+      expected_status_code: 200.5
+    )
+    assert_not destination.valid?
+    assert destination.errors[:expected_status_code].any?
+  end
+
+  test "default expected_status_code is nil" do
+    destination = Destination.new(
+      organization: organizations(:acme),
+      name: "My API",
+      url: "https://api.example.com/webhooks"
+    )
+    destination.save!
+    assert_nil destination.expected_status_code
+  end
 end

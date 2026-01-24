@@ -362,4 +362,69 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_equal raw_xml, attempt.request_body
     assert_equal "application/xml", attempt.request_headers["Content-Type"]
   end
+
+  test "marks delivery as success when response matches expected_status_code" do
+    @destination.update!(expected_status_code: 204)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 204, body: "")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+    assert_equal 1, @delivery.delivery_attempts.count
+
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "success", attempt.status
+    assert_equal 204, attempt.response_status
+  end
+
+  test "marks delivery as failed when response does not match expected_status_code" do
+    @destination.update!(expected_status_code: 204)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200, body: "OK")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "failed", @delivery.status
+
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "failed", attempt.status
+    assert_equal 200, attempt.response_status
+  end
+
+  test "accepts non-2xx response when expected_status_code is set to that code" do
+    @destination.update!(expected_status_code: 500)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 500, body: "Internal Server Error")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "success", attempt.status
+    assert_equal 500, attempt.response_status
+  end
+
+  test "accepts any 2xx when expected_status_code is nil" do
+    @destination.update!(expected_status_code: nil)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 201, body: "Created")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "success", attempt.status
+    assert_equal 201, attempt.response_status
+  end
 end
