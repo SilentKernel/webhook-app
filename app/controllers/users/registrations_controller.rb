@@ -1,7 +1,10 @@
 # frozen_string_literal: true
 
 class Users::RegistrationsController < Devise::RegistrationsController
+  include TurnstileVerification
+
   before_action :configure_sign_up_params, only: [:create]
+  before_action :verify_turnstile, only: [:create]
 
   def create
     # Extract organization_name before building resource
@@ -51,7 +54,14 @@ class Users::RegistrationsController < Devise::RegistrationsController
   protected
 
   def configure_sign_up_params
-    devise_parameter_sanitizer.permit(:sign_up, keys: [:first_name, :last_name, :organization_name])
+    devise_parameter_sanitizer.permit(:sign_up, keys: [:first_name, :last_name, :organization_name, :"cf-turnstile-response"])
+  end
+
+  def prepare_resource_for_turnstile_error
+    # Exclude organization_name since it's not a User attribute
+    user_params = sign_up_params.except(:organization_name)
+    build_resource(user_params)
+    set_minimum_password_length
   end
 
   def after_sign_up_path_for(resource)

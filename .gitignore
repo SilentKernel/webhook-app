@@ -95,3 +95,7 @@ nohup.out
 /package.json
 /package-lock.json
 /node_modules/
+
+# Ignore key files for decrypting credentials and more.
+/config/credentials/*.key
+

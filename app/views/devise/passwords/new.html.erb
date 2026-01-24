@@ -8,7 +8,7 @@
         <p class="text-base-content/60 mt-2">Enter your email and we'll send you reset instructions</p>
       </div>
 
-      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "space-y-4" }) do |f| %>
+      <%= form_for(resource, as: resource_name, url: password_path(resource_name), html: { method: :post, class: "space-y-4", data: { controller: "turnstile" } }) do |f| %>
         <%= render "devise/shared/error_messages", resource: resource %>
 
         <div class="form-control w-full">
@@ -18,7 +18,14 @@
           <%= f.email_field :email, autofocus: true, autocomplete: "email", class: "input input-bordered w-full", placeholder: "you@example.com" %>
         </div>
 
-        <div class="form-control mt-6">
+        <div class="form-control text-center min-h-[72px] mt-6">
+          <div data-turnstile-target="container"
+               data-sitekey="<%= TurnstileService.site_key %>"
+               data-theme="light"
+               data-size="normal"></div>
+        </div>
+
+        <div class="form-control mt-4">
           <%= f.submit "Send Reset Instructions", class: "btn btn-primary w-full" %>
         </div>
       <% end %>
