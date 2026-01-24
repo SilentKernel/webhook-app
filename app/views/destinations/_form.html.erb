@@ -120,6 +120,34 @@
     </label>
   </div>
 
+  <% if defined?(@org_members) && @org_members.any? %>
+    <div class="divider">Failure Notifications</div>
+
+    <div class="form-control w-full">
+      <label class="label">
+        <span class="label-text">Notify on permanent failure</span>
+      </label>
+      <div class="bg-base-200 rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
+        <% @org_members.each do |member| %>
+          <label class="flex items-center gap-3 cursor-pointer hover:bg-base-300 p-2 rounded-lg transition-colors">
+            <%= check_box_tag "destination[notification_subscriber_ids][]",
+                              member.id,
+                              destination.notification_subscriber_ids.include?(member.id),
+                              id: "notification_subscriber_#{member.id}",
+                              class: "checkbox checkbox-primary checkbox-sm" %>
+            <span class="label-text flex-1">
+              <%= member.full_name %>
+              <span class="text-base-content/60 text-sm">(<%= member.email %>)</span>
+            </span>
+          </label>
+        <% end %>
+      </div>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Selected users will receive an email when a delivery permanently fails (after all retries exhausted)</span>
+      </label>
+    </div>
+  <% end %>
+
   <div class="flex gap-4 mt-6">
     <%= f.submit destination.persisted? ? "Update Destination" : "Create Destination", class: "btn btn-primary flex-1" %>
     <% if modal %>

@@ -89,5 +89,8 @@ Rails.application.routes.draw do
     end
 
     resources :deliveries, only: [:index, :show]
+
+    # Notification subscriptions management
+    resources :notification_subscriptions, only: [:destroy]
   end
 end

@@ -154,4 +154,57 @@ class DestinationsControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :not_found
   end
+
+  # Notification subscribers tests
+  test "should create destination with notification subscribers" do
+    assert_difference("Destination.count") do
+      assert_difference("DestinationNotificationSubscription.count", 2) do
+        post destinations_url(locale: :en), params: {
+          destination: {
+            name: "Destination with Subscribers",
+            url: "https://example.com/webhooks",
+            http_method: "POST",
+            auth_type: "none",
+            status: "active",
+            notification_subscriber_ids: [users(:owner).id, users(:admin).id]
+          }
+        }
+      end
+    end
+
+    destination = Destination.last
+    assert_equal 2, destination.notification_subscribers.count
+    assert_includes destination.notification_subscribers, users(:owner)
+    assert_includes destination.notification_subscribers, users(:admin)
+  end
+
+  test "should update destination notification subscribers" do
+    # Add a subscriber first
+    @destination.notification_subscribers << users(:member)
+
+    patch destination_url(@destination, locale: :en), params: {
+      destination: {
+        notification_subscriber_ids: [users(:owner).id]
+      }
+    }
+
+    @destination.reload
+    assert_equal 1, @destination.notification_subscribers.count
+    assert_includes @destination.notification_subscribers, users(:owner)
+    assert_not_includes @destination.notification_subscribers, users(:member)
+  end
+
+  test "should load org members in new action" do
+    get new_destination_url(locale: :en)
+    assert_response :success
+    # Verify the form has the failure notifications section
+    assert_select "div.divider", text: "Failure Notifications"
+  end
+
+  test "should load org members in edit action" do
+    get edit_destination_url(@destination, locale: :en)
+    assert_response :success
+    # Verify the form has the failure notifications section
+    assert_select "div.divider", text: "Failure Notifications"
+  end
 end

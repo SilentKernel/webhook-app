@@ -90,4 +90,51 @@ class UserTest < ActiveSupport::TestCase
     invitation.reload
     assert_nil invitation.invited_by
   end
+
+  # can_receive_failure_email? tests
+  test "can_receive_failure_email? returns true for confirmed user with no previous email" do
+    user = users(:owner)
+    user.last_failure_email_sent_at = nil
+
+    assert user.can_receive_failure_email?
+  end
+
+  test "can_receive_failure_email? returns true when last email was sent more than 10 minutes ago" do
+    user = users(:owner)
+    user.last_failure_email_sent_at = 11.minutes.ago
+
+    assert user.can_receive_failure_email?
+  end
+
+  test "can_receive_failure_email? returns false when last email was sent within 10 minutes" do
+    user = users(:owner)
+    user.last_failure_email_sent_at = 5.minutes.ago
+
+    assert_not user.can_receive_failure_email?
+  end
+
+  test "can_receive_failure_email? returns false for unconfirmed user" do
+    user = users(:unconfirmed)
+    user.last_failure_email_sent_at = nil
+
+    assert_not user.can_receive_failure_email?
+  end
+
+  test "can_receive_failure_email? returns true exactly at 10 minute boundary" do
+    user = users(:owner)
+    user.last_failure_email_sent_at = 10.minutes.ago - 1.second
+
+    assert user.can_receive_failure_email?
+  end
+
+  test "has many destination_notification_subscriptions" do
+    user = users(:owner)
+    assert_respond_to user, :destination_notification_subscriptions
+  end
+
+  test "has many subscribed_destinations through subscriptions" do
+    user = users(:owner)
+    assert_respond_to user, :subscribed_destinations
+    assert_includes user.subscribed_destinations, destinations(:production_api)
+  end
 end

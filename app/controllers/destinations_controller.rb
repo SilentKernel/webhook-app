@@ -4,6 +4,7 @@ class DestinationsController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
   before_action :set_destination, only: [ :show, :edit, :update, :destroy ]
+  before_action :load_org_members, only: [ :new, :edit, :create, :update, :new_modal, :create_modal ]
 
   def index
     @pagy, @destinations = pagy(:offset, current_organization.destinations.order(created_at: :desc))
@@ -66,10 +67,15 @@ class DestinationsController < ApplicationController
     @destination = current_organization.destinations.find(params[:id])
   end
 
+  def load_org_members
+    @org_members = current_organization.confirmed_members.order(:first_name, :last_name)
+  end
+
   def destination_params
     params.require(:destination).permit(
       :name, :url, :http_method, :auth_type, :auth_value,
-      :status, :timeout_seconds, :max_delivery_rate
+      :status, :timeout_seconds, :max_delivery_rate,
+      notification_subscriber_ids: []
     ).tap do |p|
       if params[:destination][:headers].present?
         p[:headers] = JSON.parse(params[:destination][:headers])

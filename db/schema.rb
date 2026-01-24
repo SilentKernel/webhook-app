@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_24_200001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -68,6 +68,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
     t.index ["attempted_at"], name: "index_delivery_attempts_on_attempted_at"
     t.index ["delivery_id"], name: "index_delivery_attempts_on_delivery_id"
     t.index ["status"], name: "index_delivery_attempts_on_status"
+  end
+
+  create_table "destination_notification_subscriptions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "destination_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["destination_id", "user_id"], name: "index_dest_notif_subs_on_destination_and_user", unique: true
+    t.index ["destination_id"], name: "index_destination_notification_subscriptions_on_destination_id"
+    t.index ["user_id"], name: "index_destination_notification_subscriptions_on_user_id"
   end
 
   create_table "destinations", force: :cascade do |t|
@@ -181,6 +191,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "first_name"
+    t.datetime "last_failure_email_sent_at"
     t.string "last_name"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
@@ -189,6 +200,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
     t.datetime "updated_at", null: false
     t.index ["confirmation_token"], name: "index_users_on_confirmation_token", unique: true
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["last_failure_email_sent_at"], name: "index_users_on_last_failure_email_sent_at"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
   end
 
@@ -211,6 +223,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
   add_foreign_key "deliveries", "destinations"
   add_foreign_key "deliveries", "events"
   add_foreign_key "delivery_attempts", "deliveries"
+  add_foreign_key "destination_notification_subscriptions", "destinations"
+  add_foreign_key "destination_notification_subscriptions", "users"
   add_foreign_key "destinations", "organizations"
   add_foreign_key "events", "sources"
   add_foreign_key "invitations", "organizations"

@@ -1,0 +1,22 @@
+Webhook delivery failed
+=======================
+
+Hi <%= @user.first_name %>,
+
+A webhook delivery to "<%= @destination.name %>" has permanently failed after exhausting all retry attempts.
+
+Delivery Details
+----------------
+Destination: <%= @destination.name %>
+URL: <%= @destination.url %>
+Event Type: <%= @event.event_type || "N/A" %>
+Attempts: <%= @delivery.attempt_count %> / <%= @delivery.max_attempts %>
+
+View the delivery details: <%= delivery_url(@delivery, locale: :en) %>
+
+---
+
+You're receiving this email because you subscribed to failure notifications for this destination.
+
+To stop receiving these emails, manage your subscriptions in your profile settings:
+<%= edit_user_registration_url(locale: :en) %>

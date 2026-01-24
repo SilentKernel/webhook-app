@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+owner_production_api:
+  destination: production_api
+  user: owner
+
+admin_production_api:
+  destination: production_api
+  user: admin
+
+member_staging_api:
+  destination: staging_api
+  user: member

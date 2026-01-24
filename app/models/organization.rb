@@ -19,4 +19,8 @@ class Organization < ApplicationRecord
   def admins
     users.joins(:memberships).where(memberships: { role: [:admin, :owner] })
   end
+
+  def confirmed_members
+    users.where.not(confirmed_at: nil)
+  end
 end

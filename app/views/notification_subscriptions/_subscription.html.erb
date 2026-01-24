@@ -1,0 +1,17 @@
+<%= turbo_frame_tag subscription do %>
+  <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
+    <div class="flex-1">
+      <p class="font-medium"><%= subscription.destination.name %></p>
+      <p class="text-sm text-base-content/60 truncate"><%= subscription.destination.url %></p>
+    </div>
+    <%= button_to notification_subscription_path(subscription),
+                  method: :delete,
+                  class: "btn btn-sm btn-ghost text-error",
+                  data: { turbo_confirm: "Stop receiving failure notifications for this destination?" } do %>
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+      </svg>
+      Unsubscribe
+    <% end %>
+  </div>
+<% end %>

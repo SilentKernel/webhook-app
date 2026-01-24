@@ -77,6 +77,30 @@
 
   <div class="card bg-base-100 shadow-xl mt-6">
     <div class="card-body">
+      <h3 class="card-title">Failure Notifications</h3>
+      <p class="text-base-content/60 mb-4">You'll receive an email when webhook deliveries permanently fail for these destinations.</p>
+
+      <% subscriptions = resource.destination_notification_subscriptions.includes(:destination).order("destinations.name") %>
+      <% if subscriptions.any? %>
+        <div class="space-y-2">
+          <% subscriptions.each do |subscription| %>
+            <%= render "notification_subscriptions/subscription", subscription: subscription %>
+          <% end %>
+        </div>
+      <% else %>
+        <div class="text-center py-6 bg-base-200 rounded-lg">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 mx-auto text-base-content/40 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+          </svg>
+          <p class="text-base-content/60">No notification subscriptions</p>
+          <p class="text-sm text-base-content/40">Subscribe to destinations from the destination edit page</p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="card bg-base-100 shadow-xl mt-6">
+    <div class="card-body">
       <h3 class="card-title text-error">Danger Zone</h3>
       <p class="text-base-content/60">Once you delete your account, there is no going back.</p>
       <div class="card-actions justify-end mt-4">

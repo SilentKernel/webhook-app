@@ -127,6 +127,28 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_no_enqueued_jobs only: DeliverWebhookJob
   end
 
+  test "enqueues failure notification job on permanent failure" do
+    @delivery.update!(attempt_count: 4, max_attempts: 5)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 500)
+
+    assert_enqueued_with(job: SendDeliveryFailureNotificationJob) do
+      DeliverWebhookJob.perform_now(@delivery.id)
+    end
+  end
+
+  test "does not enqueue failure notification job when retrying" do
+    @delivery.update!(attempt_count: 0, max_attempts: 5)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 500)
+
+    assert_no_enqueued_jobs(only: SendDeliveryFailureNotificationJob) do
+      DeliverWebhookJob.perform_now(@delivery.id)
+    end
+  end
+
   test "skips already successful delivery" do
     @delivery.update!(status: :success)
 
