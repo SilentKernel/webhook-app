@@ -1,4 +1,4 @@
-<%= form_with model: connection, url: connection.persisted? ? connection_path(connection) : connections_path, class: "space-y-4" do |f| %>
+<%= form_with model: connection, url: connection.persisted? ? connection_path(connection) : connections_path, class: "space-y-4", data: { controller: "connection-form", connection_form_source_edit_path_value: edit_source_path("__ID__"), connection_form_destination_edit_path_value: edit_destination_path("__ID__") } do |f| %>
   <% if connection.errors.any? %>
     <div class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
@@ -29,30 +29,14 @@
       <%= f.label :source_id, class: "label" do %>
         <span class="label-text">Source <span class="text-error">*</span></span>
       <% end %>
-      <% if @sources.any? %>
-        <%= f.select :source_id, @sources.map { |s| [s.name, s.id] },
-            { include_blank: "Select a source...", selected: params[:source_id] || connection.source_id },
-            class: "select select-bordered w-full", required: true %>
-      <% else %>
-        <div class="alert alert-warning">
-          <span>No active sources available. <%= link_to "Create a source", new_source_path, class: "link" %> first.</span>
-        </div>
-      <% end %>
+      <%= render "connections/source_selector", sources: @sources, selected_id: params[:source_id] || connection.source_id %>
     </div>
 
     <div class="form-control w-full">
       <%= f.label :destination_id, class: "label" do %>
         <span class="label-text">Destination <span class="text-error">*</span></span>
       <% end %>
-      <% if @destinations.any? %>
-        <%= f.select :destination_id, @destinations.map { |d| [d.name, d.id] },
-            { include_blank: "Select a destination...", selected: params[:destination_id] || connection.destination_id },
-            class: "select select-bordered w-full", required: true %>
-      <% else %>
-        <div class="alert alert-warning">
-          <span>No active destinations available. <%= link_to "Create a destination", new_destination_path, class: "link" %> first.</span>
-        </div>
-      <% end %>
+      <%= render "connections/destination_selector", destinations: @destinations, selected_id: params[:destination_id] || connection.destination_id %>
     </div>
   </div>
 
@@ -96,11 +80,7 @@
   </div>
 
   <div class="flex gap-4 mt-6">
-    <% if @sources.any? && @destinations.any? %>
-      <%= f.submit connection.persisted? ? "Update Connection" : "Create Connection", class: "btn btn-primary flex-1" %>
-    <% else %>
-      <button type="button" class="btn btn-primary flex-1" disabled>Create Connection</button>
-    <% end %>
+    <%= f.submit connection.persisted? ? "Update Connection" : "Create Connection", class: "btn btn-primary flex-1" %>
     <%= link_to "Cancel", connection.persisted? ? connection_path(connection) : connections_path, class: "btn btn-ghost" %>
   </div>
 <% end %>

@@ -7,8 +7,6 @@ class Source < ApplicationRecord
 
   enum :status, { active: 0, paused: 1 }
 
-  encrypts :verification_secret
-
   validates :name, presence: true
   validates :ingest_token, presence: true, uniqueness: true
 

@@ -43,6 +43,23 @@ class DestinationsController < ApplicationController
     redirect_to destinations_path, notice: "Destination deleted successfully."
   end
 
+  def new_modal
+    @destination = current_organization.destinations.build
+    render layout: false
+  end
+
+  def create_modal
+    @destination = current_organization.destinations.build(destination_params)
+
+    if @destination.save
+      respond_to do |format|
+        format.turbo_stream
+      end
+    else
+      render :new_modal, layout: false, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def set_destination

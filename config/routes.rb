@@ -67,8 +67,18 @@ Rails.application.routes.draw do
     resource :settings, only: [:show, :update]
 
     # Webhook management
-    resources :sources
-    resources :destinations
+    resources :sources do
+      collection do
+        get :new_modal
+        post :create_modal
+      end
+    end
+    resources :destinations do
+      collection do
+        get :new_modal
+        post :create_modal
+      end
+    end
     resources :connections
 
     # Event and delivery logging

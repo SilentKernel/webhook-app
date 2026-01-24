@@ -6,8 +6,6 @@ class Destination < ApplicationRecord
   enum :status, { active: 0, paused: 1, disabled: 2 }, prefix: true
   enum :auth_type, { none: 0, bearer: 1, basic: 2, api_key: 3 }, prefix: true
 
-  encrypts :auth_value
-
   validates :name, presence: true
   validates :url, presence: true,
     format: { with: /\Ahttps?:\/\/.+\z/i, message: "must be a valid HTTP or HTTPS URL" }

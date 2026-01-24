@@ -1,0 +1,7 @@
+<%# Update the destination selector with the new destination selected %>
+<%= turbo_stream.replace "destination_selector" do %>
+  <%= render "connections/destination_selector", destinations: current_organization.destinations.where(status: [:active, :paused]), selected_id: @destination.id %>
+<% end %>
+
+<%# Clear the modal frame (closes the dialog) %>
+<%= turbo_stream.update "modal", "" %>

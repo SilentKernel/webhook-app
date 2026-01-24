@@ -1,4 +1,6 @@
-<%= form_with model: destination, url: destination.persisted? ? destination_path(destination) : destinations_path, class: "space-y-4" do |f| %>
+<% modal ||= false %>
+<% form_url = modal ? create_modal_destinations_path : (destination.persisted? ? destination_path(destination) : destinations_path) %>
+<%= form_with model: destination, url: form_url, class: "space-y-4" do |f| %>
   <% if destination.errors.any? %>
     <div class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
@@ -120,6 +122,10 @@
 
   <div class="flex gap-4 mt-6">
     <%= f.submit destination.persisted? ? "Update Destination" : "Create Destination", class: "btn btn-primary flex-1" %>
-    <%= link_to "Cancel", destination.persisted? ? destination_path(destination) : destinations_path, class: "btn btn-ghost" %>
+    <% if modal %>
+      <button type="button" class="btn btn-ghost" data-action="modal#close">Cancel</button>
+    <% else %>
+      <%= link_to "Cancel", destination.persisted? ? destination_path(destination) : destinations_path, class: "btn btn-ghost" %>
+    <% end %>
   </div>
 <% end %>
