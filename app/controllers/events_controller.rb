@@ -33,12 +33,13 @@ class EventsController < ApplicationController
     end
 
     connections.each do |connection|
-      @event.deliveries.create!(
+      delivery = @event.deliveries.create!(
         connection: connection,
         destination: connection.destination,
-        status: :pending,
+        status: :queued,
         max_attempts: 5
       )
+      DeliverWebhookJob.perform_later(delivery.id)
     end
 
     redirect_to event_path(@event), notice: "Event queued for replay to #{connections.count} destination(s)."

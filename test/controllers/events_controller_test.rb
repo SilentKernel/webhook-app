@@ -58,10 +58,13 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
   end
 
   # Replay tests
-  test "replay creates pending deliveries for active connections" do
+  test "replay creates queued deliveries for active connections and enqueues jobs" do
     initial_delivery_count = @event.deliveries.count
+    active_connections_count = @event.source.connections.active.count
 
-    post replay_event_url(@event, locale: :en)
+    assert_enqueued_jobs active_connections_count, only: DeliverWebhookJob do
+      post replay_event_url(@event, locale: :en)
+    end
 
     assert_redirected_to event_path(@event, locale: :en)
     assert_match(/queued for replay/, flash[:notice])
@@ -70,7 +73,7 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
     assert @event.deliveries.count > initial_delivery_count
 
     new_delivery = @event.deliveries.order(created_at: :desc).first
-    assert new_delivery.pending?
+    assert new_delivery.queued?
     assert_equal 5, new_delivery.max_attempts
   end
 
