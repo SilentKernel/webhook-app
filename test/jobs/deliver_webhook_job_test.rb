@@ -239,7 +239,8 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
 
   test "sends event payload as JSON body" do
     event = @delivery.event
-    event.update!(payload: { "id" => "test_123", "amount" => 1000 })
+    # Clear raw_body to test legacy JSON payload conversion
+    event.update!(payload: { "id" => "test_123", "amount" => 1000 }, raw_body: nil)
 
     stub_request(:post, @destination.url)
       .with(body: '{"id":"test_123","amount":1000}')
@@ -261,5 +262,104 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     @delivery.reload
     attempt = @delivery.delivery_attempts.last
     assert attempt.response_body.length <= 65_535
+  end
+
+  test "forwards raw_body when present" do
+    raw_xml = '<event><type>test</type></event>'
+    event = @delivery.event
+    event.update!(
+      raw_body: raw_xml,
+      content_type: "application/xml",
+      body_size: raw_xml.bytesize
+    )
+
+    stub_request(:post, @destination.url)
+      .with(body: raw_xml)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    assert_requested :post, @destination.url, body: raw_xml
+  end
+
+  test "uses original content-type when raw_body present" do
+    raw_text = "Hello, world!"
+    event = @delivery.event
+    event.update!(
+      raw_body: raw_text,
+      content_type: "text/plain",
+      body_size: raw_text.bytesize
+    )
+
+    stub_request(:post, @destination.url)
+      .with(headers: { "Content-Type" => "text/plain" })
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    assert_requested :post, @destination.url
+  end
+
+  test "forwards form-urlencoded body with correct content-type" do
+    form_body = "event=test&value=123"
+    event = @delivery.event
+    event.update!(
+      raw_body: form_body,
+      content_type: "application/x-www-form-urlencoded",
+      body_size: form_body.bytesize
+    )
+
+    stub_request(:post, @destination.url)
+      .with(
+        body: form_body,
+        headers: { "Content-Type" => "application/x-www-form-urlencoded" }
+      )
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    assert_requested :post, @destination.url
+  end
+
+  test "falls back to JSON for legacy events without raw_body" do
+    event = @delivery.event
+    event.update!(
+      payload: { "id" => "legacy_123", "type" => "test" },
+      raw_body: nil,
+      content_type: "application/json"
+    )
+
+    expected_body = '{"id":"legacy_123","type":"test"}'
+
+    stub_request(:post, @destination.url)
+      .with(
+        body: expected_body,
+        headers: { "Content-Type" => "application/json" }
+      )
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    assert_requested :post, @destination.url
+  end
+
+  test "stores raw_body in delivery attempt request_body" do
+    raw_xml = '<webhook><id>123</id></webhook>'
+    event = @delivery.event
+    event.update!(
+      raw_body: raw_xml,
+      content_type: "application/xml",
+      body_size: raw_xml.bytesize
+    )
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_equal raw_xml, attempt.request_body
+    assert_equal "application/xml", attempt.request_headers["Content-Type"]
   end
 end

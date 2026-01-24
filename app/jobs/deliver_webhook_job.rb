@@ -33,6 +33,7 @@ class DeliverWebhookJob < ApplicationJob
   def send_webhook(delivery, event, destination)
     attempt_number = delivery.attempt_count + 1
     started_at = Time.current
+    request_body = request_body_for(event)
 
     begin
       response = make_request(event, destination)
@@ -43,7 +44,7 @@ class DeliverWebhookJob < ApplicationJob
         request_url: destination.url,
         request_method: destination.http_method,
         request_headers: build_request_headers(event, destination),
-        request_body: event.payload.to_json,
+        request_body: truncate_body(request_body),
         response_status: response.status,
         response_headers: response.headers.to_h,
         response_body: truncate_body(response.body),
@@ -57,7 +58,7 @@ class DeliverWebhookJob < ApplicationJob
         request_url: destination.url,
         request_method: destination.http_method,
         request_headers: build_request_headers(event, destination),
-        request_body: event.payload.to_json,
+        request_body: truncate_body(request_body),
         duration_ms: ((Time.current - started_at) * 1000).to_i,
         error_message: e.message,
         error_code: error_code_for(e),
@@ -76,7 +77,7 @@ class DeliverWebhookJob < ApplicationJob
     end
 
     headers = build_request_headers(event, destination)
-    body = event.payload.to_json
+    body = request_body_for(event)
 
     case destination.http_method.upcase
     when "POST"
@@ -94,9 +95,21 @@ class DeliverWebhookJob < ApplicationJob
     end
   end
 
+  def request_body_for(event)
+    # Use raw_body if available (new events), fallback to JSON for legacy events
+    if event.raw_body.present?
+      event.raw_body
+    else
+      event.payload.to_json
+    end
+  end
+
   def build_request_headers(event, destination)
+    # Use original content-type if raw_body present, fallback to JSON for legacy events
+    content_type = event.raw_body.present? ? event.content_type : "application/json"
+
     headers = {
-      "Content-Type" => "application/json",
+      "Content-Type" => content_type || "application/json",
       "User-Agent" => "WebhookPlatform/1.0",
       "X-Webhook-Event-Id" => event.uid,
       "X-Webhook-Event-Type" => event.event_type.to_s,

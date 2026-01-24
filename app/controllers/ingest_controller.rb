@@ -61,24 +61,60 @@ class IngestController < ActionController::Base
   end
 
   def create_event
+    raw_body = request.raw_post
+    is_binary = binary_content?
+    payload = request_payload(raw_body)
+
     @source.events.create!(
-      payload: request_payload,
+      payload: payload,
+      raw_body: raw_body,
+      body_is_binary: is_binary,
+      body_size: raw_body.bytesize,
       headers: request_headers,
       query_params: request.query_parameters,
       source_ip: request.remote_ip,
       content_type: request.content_type,
-      event_type: extract_event_type,
+      event_type: extract_event_type(payload),
       received_at: Time.current
     )
   end
 
-  def request_payload
-    # Parse JSON body, or store raw body for other content types
-    if request.content_type&.include?("application/json")
-      JSON.parse(request.raw_post) rescue { raw: request.raw_post }
+  def request_payload(raw_body)
+    content_type = request.content_type.to_s
+
+    if content_type.include?("application/json")
+      # JSON: parse to hash
+      JSON.parse(raw_body) rescue { _format: "json", _error: "parse_failed", _preview: raw_body.truncate(500) }
+    elsif content_type.include?("application/x-www-form-urlencoded")
+      # Form-urlencoded: parse to hash
+      Rack::Utils.parse_nested_query(raw_body)
+    elsif content_type.include?("xml")
+      # XML: store metadata only (parsing is complex and often unnecessary)
+      { _format: "xml", _size: raw_body.bytesize, _preview: raw_body.truncate(500) }
+    elsif content_type.start_with?("text/")
+      # Plain text: store content directly
+      { _content: raw_body.truncate(65_535) }
+    elsif binary_content?
+      # Binary: store metadata only
+      { _format: "binary", _content_type: content_type, _size: raw_body.bytesize }
     else
-      { raw: request.raw_post }
+      # Unknown: store as text if valid UTF-8, otherwise as binary metadata
+      if raw_body.force_encoding("UTF-8").valid_encoding?
+        { _content: raw_body.truncate(65_535) }
+      else
+        { _format: "binary", _content_type: content_type, _size: raw_body.bytesize }
+      end
     end
+  end
+
+  def binary_content?
+    content_type = request.content_type.to_s
+    return true if content_type.start_with?("image/", "audio/", "video/", "application/octet-stream")
+    return true if content_type.include?("multipart/")
+
+    # Check if body contains non-UTF-8 bytes
+    raw_post = request.raw_post
+    !raw_post.force_encoding("UTF-8").valid_encoding?
   end
 
   def request_headers
@@ -93,9 +129,7 @@ class IngestController < ActionController::Base
     headers
   end
 
-  def extract_event_type
-    payload = request_payload
-
+  def extract_event_type(payload)
     # Common patterns for event type extraction
     payload["type"] ||           # Stripe, many others
       payload["event_type"] ||   # Some providers

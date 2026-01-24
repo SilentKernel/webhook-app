@@ -22,7 +22,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     json_response = JSON.parse(response.body)
     assert_equal Event.last.uid, json_response["event_id"]
-    assert_equal "Webhook received", json_response["message"]
+    assert_equal "Webhook received by HookStack", json_response["message"]
   end
 
   test "returns 404 for invalid token" do
@@ -136,14 +136,80 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert_not_nil event.source_ip
   end
 
-  test "handles non-JSON content type" do
+  test "handles plain text content type" do
     post ingest_url(token: @source.ingest_token),
          params: "raw body content",
          headers: { "Content-Type" => "text/plain" }
 
     assert_response :accepted
     event = Event.last
-    assert_equal({ "raw" => "raw body content" }, event.payload)
+    assert_equal({ "_content" => "raw body content" }, event.payload)
+    assert_equal "raw body content", event.raw_body
+    assert_equal 16, event.body_size
+    assert_not event.body_is_binary
+    assert event.text?
+  end
+
+  test "handles XML content type" do
+    xml_body = '<event><type>test</type><data>123</data></event>'
+
+    post ingest_url(token: @source.ingest_token),
+         params: xml_body,
+         headers: { "Content-Type" => "application/xml" }
+
+    assert_response :accepted
+    event = Event.last
+    assert_equal "xml", event.payload["_format"]
+    assert_equal xml_body.bytesize, event.payload["_size"]
+    assert_equal xml_body, event.raw_body
+    assert event.xml?
+  end
+
+  test "handles form-urlencoded content type" do
+    form_body = "event=test&value=123&nested[key]=value"
+
+    post ingest_url(token: @source.ingest_token),
+         params: form_body,
+         headers: { "Content-Type" => "application/x-www-form-urlencoded" }
+
+    assert_response :accepted
+    event = Event.last
+    assert_equal "test", event.payload["event"]
+    assert_equal "123", event.payload["value"]
+    assert_equal({ "key" => "value" }, event.payload["nested"])
+    assert_equal form_body, event.raw_body
+    assert event.form_urlencoded?
+  end
+
+  test "handles binary content type" do
+    binary_body = "\x00\x01\x02\xFF\xFE".b
+
+    post ingest_url(token: @source.ingest_token),
+         params: binary_body,
+         headers: { "Content-Type" => "application/octet-stream" }
+
+    assert_response :accepted
+    event = Event.last
+    assert_equal "binary", event.payload["_format"]
+    assert_equal 5, event.payload["_size"]
+    assert_equal binary_body.bytes, event.raw_body.bytes
+    assert event.body_is_binary
+    assert event.binary?
+  end
+
+  test "stores raw_body for JSON webhooks" do
+    payload = { type: "payment.completed", data: { id: "123" } }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :accepted
+    event = Event.last
+    assert_equal payload.to_json, event.raw_body
+    assert_equal payload.to_json.bytesize, event.body_size
+    assert_not event.body_is_binary
+    assert event.json?
   end
 
   test "returns 401 for invalid stripe signature" do

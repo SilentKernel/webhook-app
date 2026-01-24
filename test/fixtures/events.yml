@@ -8,6 +8,9 @@ stripe_payment_event:
     id: pay_123
     amount: 1000
     currency: usd
+  raw_body: '{"id":"pay_123","amount":1000,"currency":"usd"}'
+  body_is_binary: false
+  body_size: 45
   headers:
     content-type: application/json
     stripe-signature: t=123,v1=abc
@@ -24,6 +27,9 @@ github_push_event:
     ref: refs/heads/main
     repository:
       full_name: acme/app
+  raw_body: '{"ref":"refs/heads/main","repository":{"full_name":"acme/app"}}'
+  body_is_binary: false
+  body_size: 63
   headers:
     content-type: application/json
     x-github-event: push
@@ -38,6 +44,9 @@ old_event:
   event_type: customer.created
   payload:
     id: cus_123
+  raw_body: '{"id":"cus_123"}'
+  body_is_binary: false
+  body_size: 16
   headers:
     content-type: application/json
   query_params: {}
@@ -51,6 +60,9 @@ other_org_event:
   event_type: payment.completed
   payload:
     id: pay_other
+  raw_body: '{"id":"pay_other"}'
+  body_is_binary: false
+  body_size: 18
   headers:
     content-type: application/json
   query_params: {}

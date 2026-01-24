@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_15_170053) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_24_165800) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -88,12 +88,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_15_170053) do
   end
 
   create_table "events", force: :cascade do |t|
+    t.boolean "body_is_binary", default: false, null: false
+    t.integer "body_size"
     t.string "content_type"
     t.datetime "created_at", null: false
     t.string "event_type"
     t.jsonb "headers", default: {}
     t.jsonb "payload", default: {}
     t.jsonb "query_params", default: {}
+    t.binary "raw_body"
     t.datetime "received_at", null: false
     t.bigint "source_id", null: false
     t.string "source_ip"
