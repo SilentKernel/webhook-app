@@ -68,15 +68,24 @@
         </h3>
         <div class="stats stats-vertical shadow">
           <div class="stat py-2">
-            <div class="stat-title">Webhooks</div>
-            <div class="stat-value text-lg">0</div>
+            <div class="stat-title">Active Sources</div>
+            <div class="stat-value text-lg"><%= @sources_count %></div>
           </div>
           <div class="stat py-2">
-            <div class="stat-title">Endpoints</div>
-            <div class="stat-value text-lg">0</div>
+            <div class="stat-title">Active Endpoints</div>
+            <div class="stat-value text-lg"><%= @destinations_count %></div>
+          </div>
+          <div class="stat py-2">
+            <div class="stat-title">Events (24h)</div>
+            <div class="stat-value text-lg"><%= number_with_delimiter(@events_24h_count) %></div>
+          </div>
+          <div class="stat py-2">
+            <div class="stat-title">Success Rate (7d)</div>
+            <div class="stat-value text-lg <%= success_rate_color(@success_rate) %>">
+              <%= @success_rate ? "#{@success_rate}%" : "—" %>
+            </div>
           </div>
         </div>
-        <p class="text-xs text-base-content/50 mt-2">Coming soon...</p>
       </div>
     </div>
   </div>

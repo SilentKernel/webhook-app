@@ -98,4 +98,17 @@ module ApplicationHelper
       "Pending"
     end
   end
+
+  # Color class for success rate percentage
+  def success_rate_color(rate)
+    return "" if rate.nil?
+
+    if rate >= 95
+      "text-success"
+    elsif rate >= 80
+      "text-warning"
+    else
+      "text-error"
+    end
+  end
 end
