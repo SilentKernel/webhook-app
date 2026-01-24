@@ -1,0 +1,13 @@
+Confirm your email address
+==========================
+
+Welcome to HookStack! Please confirm your email address to get started.
+
+Click the link below to verify <%= @email %> and activate your account:
+
+<%= confirmation_url(@resource, confirmation_token: @token) %>
+
+If you didn't create an account with HookStack, you can safely ignore this email.
+
+--
+(c) <%= Date.current.year %> HookStack

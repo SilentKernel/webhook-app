@@ -1,0 +1,20 @@
+Email address updated
+=====================
+
+Hello,
+
+<% if @resource.try(:unconfirmed_email?) %>
+We're contacting you to notify you that a request has been made to change your HookStack email address to <%= @resource.unconfirmed_email %>.
+
+This change will take effect once the new email address is confirmed.
+<% else %>
+We're contacting you to notify you that your HookStack email address has been successfully changed to <%= @resource.email %>.
+<% end %>
+
+DIDN'T MAKE THIS CHANGE?
+If you didn't request this email change, please secure your account immediately by resetting your password and contacting our support team.
+
+This notification was sent to <%= @email %> for security purposes.
+
+--
+(c) <%= Date.current.year %> HookStack

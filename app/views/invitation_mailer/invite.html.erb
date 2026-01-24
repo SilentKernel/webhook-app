@@ -1,81 +1,33 @@
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type" />
-    <style>
-      body {
-        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-        line-height: 1.6;
-        color: #333;
-        max-width: 600px;
-        margin: 0 auto;
-        padding: 20px;
-      }
-      .header {
-        text-align: center;
-        padding: 20px 0;
-        border-bottom: 1px solid #eee;
-      }
-      .content {
-        padding: 30px 0;
-      }
-      .button {
-        display: inline-block;
-        background-color: #570DF8;
-        color: white;
-        padding: 12px 24px;
-        text-decoration: none;
-        border-radius: 8px;
-        margin: 20px 0;
-      }
-      .footer {
-        border-top: 1px solid #eee;
-        padding-top: 20px;
-        font-size: 12px;
-        color: #666;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="header">
-      <h1>HookStack</h1>
-    </div>
+<h2 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 600; color: #0e1629;">You're invited!</h2>
 
-    <div class="content">
-      <h2>You're invited!</h2>
+<p style="margin: 0 0 16px 0;">
+  You've been invited to join <strong><%= @organization.name %></strong> on HookStack
+  as a <strong><%= @invitation.role %></strong>.
+</p>
 
-      <p>
-        You've been invited to join <strong><%= @organization.name %></strong> on HookStack
-        as a <strong><%= @invitation.role %></strong>.
-      </p>
+<% if @invitation.invited_by %>
+  <p style="margin: 0 0 24px 0; color: #6b7280;">
+    <em><%= @invitation.invited_by.full_name %></em> has invited you to collaborate.
+  </p>
+<% end %>
 
-      <% if @invitation.invited_by %>
-        <p>
-          <em><%= @invitation.invited_by.full_name %></em> has invited you to collaborate.
-        </p>
-      <% end %>
+<p style="margin: 24px 0; text-align: center;">
+  <!--[if mso]>
+  <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<%= @accept_url %>" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="17%" strokecolor="#2362ea" fillcolor="#2362ea">
+    <w:anchorlock/>
+    <center style="color:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;">Accept Invitation</center>
+  </v:roundrect>
+  <![endif]-->
+  <!--[if !mso]><!-->
+  <a href="<%= @accept_url %>" class="button-link" style="display: inline-block; background-color: #2362ea; color: #ffffff; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">Accept Invitation</a>
+  <!--<![endif]-->
+</p>
 
-      <p style="text-align: center;">
-        <a href="<%= @accept_url %>" class="button">Accept Invitation</a>
-      </p>
+<p style="margin: 24px 0 0 0; font-size: 14px; color: #6b7280;">
+  Or copy and paste this link into your browser:<br>
+  <a href="<%= @accept_url %>" style="color: #2362ea; text-decoration: none; word-break: break-all;"><%= @accept_url %></a>
+</p>
 
-      <p>
-        Or copy and paste this link into your browser:<br>
-        <a href="<%= @accept_url %>"><%= @accept_url %></a>
-      </p>
-
-      <p>
-        This invitation will expire in 7 days.
-      </p>
-    </div>
-
-    <div class="footer">
-      <p>
-        If you didn't expect this invitation, you can safely ignore this email.
-      </p>
-      <p>
-        &copy; <%= Date.current.year %> HookStack
-      </p>
-    </div>
-  </body>
-</html>
+<p style="margin: 24px 0 0 0; padding-top: 24px; border-top: 1px solid #e0e7ef; font-size: 14px; color: #6b7280;">
+  This invitation will expire in 7 days. If you didn't expect this invitation, you can safely ignore this email.
+</p>

@@ -1,0 +1,18 @@
+Unlock your account
+===================
+
+Hello,
+
+Your HookStack account associated with <%= @resource.email %> has been locked due to too many unsuccessful sign-in attempts.
+
+Click the link below to unlock your account and regain access:
+
+<%= unlock_url(@resource, unlock_token: @token) %>
+
+WASN'T YOU?
+If you didn't attempt to sign in, someone else may be trying to access your account. Consider resetting your password after unlocking.
+
+If you didn't request this unlock email, you can safely ignore it.
+
+--
+(c) <%= Date.current.year %> HookStack

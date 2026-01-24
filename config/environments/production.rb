@@ -56,7 +56,8 @@ Rails.application.configure do
 
   # Set host from credentials (used for generating links in emails)
   config.action_mailer.default_url_options = {
-    host: Rails.application.credentials.dig(:mailer, :host) || "example.com"
+    host: Rails.application.credentials.dig(:mailer, :host) || "example.com",
+    locale: :en
   }
 
   # SMTP settings from credentials

@@ -1,7 +1,60 @@
-<p>Hello <%= @resource.email %>!</p>
+<h2 class="email-title" style="margin: 0 0 24px 0; font-size: 24px; font-weight: 600; color: #0e1629; line-height: 1.3; mso-line-height-rule: exactly;">
+  Unlock your account
+</h2>
 
-<p>Your account has been locked due to an excessive number of unsuccessful sign in attempts.</p>
+<p class="email-body" style="margin: 0 0 16px 0; font-size: 16px; color: #374151; line-height: 1.6; mso-line-height-rule: exactly;">
+  Hello,
+</p>
 
-<p>Click the link below to unlock your account:</p>
+<p class="email-body" style="margin: 0 0 16px 0; font-size: 16px; color: #374151; line-height: 1.6; mso-line-height-rule: exactly;">
+  Your HookStack account associated with <strong><%= @resource.email %></strong> has been locked due to too many unsuccessful sign-in attempts.
+</p>
 
-<p><%= link_to 'Unlock my account', unlock_url(@resource, unlock_token: @token) %></p>
+<p class="email-body" style="margin: 0 0 24px 0; font-size: 16px; color: #374151; line-height: 1.6; mso-line-height-rule: exactly;">
+  Click the button below to unlock your account and regain access.
+</p>
+
+<% unlock_link = unlock_url(@resource, unlock_token: @token) %>
+
+<!-- Button with VML fallback for Outlook -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+  <tr>
+    <td align="center" style="border-radius: 8px; background-color: #2362ea;">
+      <!--[if mso]>
+      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<%= unlock_link %>" style="height:48px;v-text-anchor:middle;width:200px;" arcsize="17%" strokecolor="#2362ea" fillcolor="#2362ea">
+        <w:anchorlock/>
+        <center style="color:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;">Unlock My Account</center>
+      </v:roundrect>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <a href="<%= unlock_link %>" target="_blank" class="button-link" style="display: inline-block; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; mso-hide: all;">
+        Unlock My Account
+      </a>
+      <!--<![endif]-->
+    </td>
+  </tr>
+</table>
+
+<p class="email-muted" style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280; line-height: 1.5; mso-line-height-rule: exactly;">
+  Or copy and paste this link into your browser:
+</p>
+
+<p style="margin: 0 0 24px 0; font-size: 14px; line-height: 1.5; mso-line-height-rule: exactly; word-break: break-all;">
+  <a href="<%= unlock_link %>" class="email-link" style="color: #2362ea; text-decoration: underline;"><%= unlock_link %></a>
+</p>
+
+<!-- Info box -->
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+  <tr>
+    <td class="email-info-box" style="padding: 16px; background-color: #ecf1fd; border-radius: 8px; border-left: 4px solid #2362ea;">
+      <p class="email-body" style="margin: 0; font-size: 14px; color: #374151; line-height: 1.5; mso-line-height-rule: exactly;">
+        <strong>Wasn't you?</strong><br>
+        If you didn't attempt to sign in, someone else may be trying to access your account. Consider resetting your password after unlocking.
+      </p>
+    </td>
+  </tr>
+</table>
+
+<p class="email-muted" style="margin: 0; font-size: 14px; color: #6b7280; line-height: 1.5; mso-line-height-rule: exactly;">
+  If you didn't request this unlock email, you can safely ignore it.
+</p>
