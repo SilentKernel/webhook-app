@@ -13,6 +13,16 @@ export default class extends Controller {
     this.updateDestinationEditLink()
   }
 
+  // Called when a sourceSelect target connects to the DOM (initial load or Turbo Stream replace)
+  sourceSelectTargetConnected() {
+    this.updateSourceEditLink()
+  }
+
+  // Called when a destinationSelect target connects to the DOM (initial load or Turbo Stream replace)
+  destinationSelectTargetConnected() {
+    this.updateDestinationEditLink()
+  }
+
   sourceChanged() {
     this.updateSourceEditLink()
   }
