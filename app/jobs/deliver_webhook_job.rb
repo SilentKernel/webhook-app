@@ -21,12 +21,12 @@ class DeliverWebhookJob < ApplicationJob
     else
       delivery.mark_failed!
 
+      # Send notification on every failure (rate limiting in job)
+      SendDeliveryFailureNotificationJob.perform_later(delivery.id)
+
       # Schedule retry if possible
       if delivery.can_retry? && delivery.next_attempt_at.present?
         DeliverWebhookJob.set(wait_until: delivery.next_attempt_at).perform_later(delivery.id)
-      else
-        # Permanent failure - send notifications
-        SendDeliveryFailureNotificationJob.perform_later(delivery.id)
       end
     end
   end

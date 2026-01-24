@@ -7,7 +7,12 @@
 </p>
 
 <p class="email-body" style="margin: 0 0 24px 0; font-size: 16px; color: #374151; line-height: 1.6; mso-line-height-rule: exactly;">
-  A webhook delivery to <strong><%= @destination.name %></strong> has permanently failed after exhausting all retry attempts.
+  <% if @delivery.can_retry? %>
+    A delivery attempt to <strong><%= @destination.name %></strong> has failed.
+    Retries remaining: <%= @delivery.max_attempts - @delivery.attempt_count %>.
+  <% else %>
+    A delivery to <strong><%= @destination.name %></strong> has permanently failed after <%= @delivery.attempt_count %> attempts.
+  <% end %>
 </p>
 
 <!-- Info box -->
@@ -45,6 +50,7 @@
 </table>
 
 <% delivery_link = delivery_url(@delivery, locale: :en) %>
+<% failed_deliveries_link = deliveries_url(status: 'failed', destination_id: @destination.id, locale: :en) %>
 
 <!-- Button with VML fallback for Outlook -->
 <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
@@ -59,6 +65,25 @@
       <!--[if !mso]><!-->
       <a href="<%= delivery_link %>" target="_blank" class="button-link" style="display: inline-block; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; mso-hide: all;">
         View Delivery Details
+      </a>
+      <!--<![endif]-->
+    </td>
+  </tr>
+</table>
+
+<!-- Secondary button for all failed deliveries -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0;">
+  <tr>
+    <td align="center" style="border-radius: 8px; background-color: #6b7280;">
+      <!--[if mso]>
+      <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="<%= failed_deliveries_link %>" style="height:48px;v-text-anchor:middle;width:260px;" arcsize="17%" strokecolor="#6b7280" fillcolor="#6b7280">
+        <w:anchorlock/>
+        <center style="color:#ffffff;font-family:Helvetica,Arial,sans-serif;font-size:16px;font-weight:600;">View All Failed Deliveries</center>
+      </v:roundrect>
+      <![endif]-->
+      <!--[if !mso]><!-->
+      <a href="<%= failed_deliveries_link %>" target="_blank" class="button-link" style="display: inline-block; padding: 14px 28px; font-size: 16px; font-weight: 600; color: #ffffff; text-decoration: none; border-radius: 8px; mso-hide: all;">
+        View All Failed Deliveries
       </a>
       <!--<![endif]-->
     </td>

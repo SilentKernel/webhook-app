@@ -50,6 +50,14 @@ class DeliveryMailerTest < ActionMailer::TestCase
     assert_match %r{/en/deliveries/#{@delivery.id}}, email.body.encoded
   end
 
+  test "failure_notification includes link to all failed deliveries" do
+    email = DeliveryMailer.failure_notification(user: @user, delivery: @delivery)
+
+    assert_match %r{/en/deliveries\?.*destination_id=#{@destination.id}}, email.body.encoded
+    assert_match %r{/en/deliveries\?.*status=failed}, email.body.encoded
+    assert_match "View All Failed Deliveries", email.body.encoded
+  end
+
   test "failure_notification includes link to profile settings" do
     email = DeliveryMailer.failure_notification(user: @user, delivery: @delivery)
 
@@ -62,5 +70,21 @@ class DeliveryMailerTest < ActionMailer::TestCase
     assert email.multipart?
     assert email.html_part.present?
     assert email.text_part.present?
+  end
+
+  test "failure_notification shows permanent failure message when no retries remain" do
+    # failed_delivery has attempt_count: 5 and max_attempts: 5, so can_retry? is false
+    email = DeliveryMailer.failure_notification(user: @user, delivery: @delivery)
+
+    assert_match "permanently failed after #{@delivery.attempt_count} attempts", email.body.encoded
+  end
+
+  test "failure_notification shows retry message when retries remain" do
+    retrying_delivery = deliveries(:retrying_delivery)
+    email = DeliveryMailer.failure_notification(user: @user, delivery: retrying_delivery)
+
+    retries_remaining = retrying_delivery.max_attempts - retrying_delivery.attempt_count
+    assert_match "has failed", email.body.encoded
+    assert_match "Retries remaining: #{retries_remaining}", email.body.encoded
   end
 end

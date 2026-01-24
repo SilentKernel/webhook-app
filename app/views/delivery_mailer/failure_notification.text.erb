@@ -3,7 +3,12 @@ Webhook delivery failed
 
 Hi <%= @user.first_name %>,
 
-A webhook delivery to "<%= @destination.name %>" has permanently failed after exhausting all retry attempts.
+<% if @delivery.can_retry? -%>
+A delivery attempt to "<%= @destination.name %>" has failed.
+Retries remaining: <%= @delivery.max_attempts - @delivery.attempt_count %>.
+<% else -%>
+A delivery to "<%= @destination.name %>" has permanently failed after <%= @delivery.attempt_count %> attempts.
+<% end -%>
 
 Delivery Details
 ----------------
@@ -13,6 +18,8 @@ Event Type: <%= @event.event_type || "N/A" %>
 Attempts: <%= @delivery.attempt_count %> / <%= @delivery.max_attempts %>
 
 View the delivery details: <%= delivery_url(@delivery, locale: :en) %>
+
+View all failed deliveries: <%= deliveries_url(status: 'failed', destination_id: @destination.id, locale: :en) %>
 
 ---
 
