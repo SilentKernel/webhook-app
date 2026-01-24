@@ -65,6 +65,28 @@ if Rails.env.development?
     m.role = :owner
   end
 
+  # Create source "n8n trigger"
+  source_n8n = Source.find_or_create_by!(organization: org, name: "n8n trigger") do |s|
+    s.source_type = SourceType.find_by(slug: "none")
+    s.verification_type = VerificationType.find_by!(slug: "none")
+    s.status = :active
+  end
+
+  # Create destination "Test n8n"
+  dest_n8n = Destination.find_or_create_by!(organization: org, name: "Test n8n") do |d|
+    d.url = "https://n8n.ludovic-frank.fr/webhook/ae6d36fb-1740-404b-b3ff-faf41e22c1de"
+    d.http_method = "POST"
+    d.auth_type = :none
+    d.status = :active
+    d.timeout_seconds = 30
+  end
+
+  # Create connection between source and destination
+  Connection.find_or_create_by!(source: source_n8n, destination: dest_n8n) do |c|
+    c.status = :active
+    c.priority = 0
+  end
+
   # Pagination test data - only created when SEED_PAGINATION=true
   if ENV["SEED_PAGINATION"]
     # Skip if pagination data already exists
