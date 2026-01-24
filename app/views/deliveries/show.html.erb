@@ -12,11 +12,11 @@
       <h1 class="text-3xl font-bold mt-2">Delivery Details</h1>
     </div>
     <div class="flex gap-2">
-      <% if @delivery.can_retry? %>
-        <%= button_to "Retry Now", retry_delivery_path(@delivery),
+      <% if @delivery.can_replay? %>
+        <%= button_to "Replay", replay_delivery_path(@delivery),
             method: :post,
             class: "btn btn-warning",
-            data: { turbo_confirm: "Retry this delivery?" } %>
+            data: { turbo_confirm: "Create a new delivery from this one?" } %>
       <% end %>
     </div>
   </div>

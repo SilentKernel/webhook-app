@@ -64,30 +64,42 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :not_found
   end
 
-  # Retry tests
-  test "retry updates status to pending when can_retry is true" do
-    assert @retrying_delivery.can_retry?
+  # Replay tests
+  test "replay creates new delivery and redirects to it" do
+    assert @failed_delivery.can_replay?
+    original_delivery_count = Delivery.count
 
-    post retry_delivery_url(@retrying_delivery, locale: :en)
+    assert_enqueued_with(job: DeliverWebhookJob) do
+      post replay_delivery_url(@failed_delivery, locale: :en)
+    end
 
-    assert_redirected_to delivery_path(@retrying_delivery, locale: :en)
-    assert_match(/queued for retry/, flash[:notice])
+    assert_equal original_delivery_count + 1, Delivery.count
 
-    @retrying_delivery.reload
-    assert @retrying_delivery.pending?
-    assert_nil @retrying_delivery.next_attempt_at
+    new_delivery = Delivery.last
+    assert_redirected_to delivery_path(new_delivery, locale: :en)
+    assert_equal "A new delivery has been created.", flash[:notice]
+
+    # Verify new delivery has same attributes
+    assert_equal @failed_delivery.event, new_delivery.event
+    assert_equal @failed_delivery.connection, new_delivery.connection
+    assert_equal @failed_delivery.destination, new_delivery.destination
+    assert_equal @failed_delivery.max_attempts, new_delivery.max_attempts
+    assert new_delivery.pending?
+    assert_equal 0, new_delivery.attempt_count
   end
 
-  test "retry shows alert when cannot retry" do
-    assert_not @failed_delivery.can_retry?
+  test "replay shows alert when cannot replay successful delivery" do
+    assert_not @successful_delivery.can_replay?
 
-    post retry_delivery_url(@failed_delivery, locale: :en)
+    assert_no_difference "Delivery.count" do
+      post replay_delivery_url(@successful_delivery, locale: :en)
+    end
 
-    assert_redirected_to delivery_path(@failed_delivery, locale: :en)
-    assert_equal "This delivery cannot be retried.", flash[:alert]
+    assert_redirected_to delivery_path(@successful_delivery, locale: :en)
+    assert_equal "This delivery cannot be replayed.", flash[:alert]
   end
 
-  test "retry should not work for delivery from another organization" do
+  test "replay should not work for delivery from another organization" do
     other_org_event = events(:other_org_event)
     other_org_connection = connections(:other_org_connection)
     other_org_destination = destinations(:other_org_destination)
@@ -100,7 +112,9 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
       max_attempts: 5
     )
 
-    post retry_delivery_url(other_org_delivery, locale: :en)
+    assert_no_difference "Delivery.count" do
+      post replay_delivery_url(other_org_delivery, locale: :en)
+    end
     assert_response :not_found
   end
 end
