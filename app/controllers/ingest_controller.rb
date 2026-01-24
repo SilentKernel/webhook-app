@@ -37,7 +37,7 @@ class IngestController < ActionController::Base
     # Return success (202 Accepted - we've queued it)
     render json: {
       event_id: @event.uid,
-      message: "Webhook received"
+      message: "Webhook received by HookStack"
     }, status: :accepted
   end
 
