@@ -90,7 +90,7 @@ Rails.application.routes.draw do
 
     resources :deliveries, only: [:index, :show] do
       member do
-        post :retry
+        post :replay
       end
     end
   end

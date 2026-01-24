@@ -29,7 +29,12 @@ class Delivery < ApplicationRecord
     attempt_count < max_attempts
   end
 
+  def can_replay?
+    !success?
+  end
+
   def mark_success!
+    increment!(:attempt_count)
     update!(status: :success, completed_at: Time.current)
   end
 

@@ -183,12 +183,32 @@ class DeliveryTest < ActiveSupport::TestCase
     assert_not delivery.can_retry?
   end
 
-  test "mark_success! updates status and completed_at" do
+  test "can_replay? returns true for failed delivery" do
+    delivery = deliveries(:failed_delivery)
+    assert delivery.failed?
+    assert delivery.can_replay?
+  end
+
+  test "can_replay? returns true for pending delivery" do
     delivery = deliveries(:pending_delivery)
+    assert delivery.pending?
+    assert delivery.can_replay?
+  end
+
+  test "can_replay? returns false for successful delivery" do
+    delivery = deliveries(:successful_delivery)
+    assert delivery.success?
+    assert_not delivery.can_replay?
+  end
+
+  test "mark_success! updates status, completed_at, and increments attempt_count" do
+    delivery = deliveries(:pending_delivery)
+    original_count = delivery.attempt_count
     freeze_time do
       delivery.mark_success!
       assert delivery.success?
       assert_equal Time.current, delivery.completed_at
+      assert_equal original_count + 1, delivery.attempt_count
     end
   end
 
