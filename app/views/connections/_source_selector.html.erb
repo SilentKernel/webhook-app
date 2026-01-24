@@ -1,6 +1,6 @@
 <%= turbo_frame_tag "source_selector" do %>
   <% if sources.any? %>
-    <div class="flex gap-2 items-end">
+    <div class="flex gap-2 items-center">
       <div class="flex-1">
         <%= select_tag "connection[source_id]",
             options_for_select(sources.map { |s| [s.name, s.id] }, selected_id),
@@ -9,13 +9,13 @@
             required: true,
             data: { connection_form_target: "sourceSelect", action: "connection-form#sourceChanged" } %>
       </div>
-      <%= link_to new_modal_sources_path, class: "btn btn-outline btn-sm", data: { turbo_frame: "modal" } do %>
+      <%= link_to new_modal_sources_path, class: "btn btn-outline btn-success btn-sm", data: { turbo_frame: "modal" } do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
         New
       <% end %>
-      <%= link_to "#", class: "btn btn-ghost btn-sm hidden", target: "_blank", data: { connection_form_target: "sourceEditLink" } do %>
+      <%= link_to "#", class: "btn btn-outline btn-warning btn-sm hidden", target: "_blank", data: { connection_form_target: "sourceEditLink" } do %>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
         </svg>
