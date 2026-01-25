@@ -1,0 +1,12 @@
+{
+  "apps": [
+    {
+      "app_id": "app_de80c3a4-4516-4934-ac88-004c9580e314",
+      "org_id": "orga_5facc9ff-236f-48c3-ad84-ddcb928d4d47",
+      "deploy_url": "https://push-n3-par-clevercloud-customers.services.clever-cloud.com/app_de80c3a4-4516-4934-ac88-004c9580e314.git",
+      "git_ssh_url": "git+ssh://git@push-n3-par-clevercloud-customers.services.clever-cloud.com/app_de80c3a4-4516-4934-ac88-004c9580e314.git",
+      "name": "hookstack.io",
+      "alias": "hookstackio"
+    }
+  ]
+}
