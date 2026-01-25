@@ -1,6 +1,5 @@
 import {Application} from "@hotwired/stimulus"
 import Clipboard from "@stimulus-components/clipboard"
-import ClipboardWithAlert from "controllers/clipboard_with_alert_controller"
 import Notification from "@stimulus-components/notification"
 import Dialog from "@stimulus-components/dialog"
 
@@ -12,7 +11,6 @@ window.Stimulus = application
 
 // Register stimulus-components
 application.register("clipboard", Clipboard)
-application.register("clipboard-with-alert", ClipboardWithAlert)
 application.register("notification", Notification)
 application.register("dialog", Dialog)
 

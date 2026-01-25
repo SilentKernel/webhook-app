@@ -49,12 +49,12 @@
               <tr>
                 <th>Ingest URL</th>
                 <td>
-                  <div class="flex items-center gap-2" data-controller="clipboard-with-alert" data-clipboard-with-alert-success-content-value="Copied!">
+                  <div class="flex items-center gap-2" data-controller="clipboard" data-clipboard-success-content-value="Copied!">
                     <code class="bg-base-200 px-2 py-1 rounded text-sm break-all"><%= request.base_url %><%= @connection.source.ingest_url %></code>
-                    <input type="hidden" value="<%= request.base_url %><%= @connection.source.ingest_url %>" data-clipboard-with-alert-target="source">
-                    <button type="button" data-action="clipboard-with-alert#copy" data-clipboard-with-alert-target="button" class="btn btn-ghost btn-xs" title="Copy URL">
+                    <input type="hidden" value="<%= request.base_url %><%= @connection.source.ingest_url %>" data-clipboard-target="source">
+                    <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy URL">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
                     </button>
                   </div>
