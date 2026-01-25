@@ -30,6 +30,14 @@ Rails.application.configure do
   # Force all access to the app over SSL, use Strict-Transport-Security, and use secure cookies.
   config.force_ssl = true
 
+  # Trust Clever Cloud reverse proxy for correct client IP detection
+  # CC_REVERSE_PROXY_IPS contains the IP ranges of Clever Cloud's load balancers
+  if ENV["CC_REVERSE_PROXY_IPS"].present?
+    config.action_dispatch.trusted_proxies = ENV["CC_REVERSE_PROXY_IPS"].split(",").map do |proxy|
+      IPAddr.new(proxy.strip)
+    end + ActionDispatch::RemoteIp::TRUSTED_PROXIES
+  end
+
   # Skip http-to-https redirect for the default health check endpoint.
   # config.ssl_options = { redirect: { exclude: ->(request) { request.path == "/up" } } }
 
