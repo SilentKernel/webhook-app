@@ -53,13 +53,15 @@ class TurnstileService
   end
 
   # Returns the site key for the Turnstile widget.
+  # Checks ENV first (for Clever Cloud/PaaS), then falls back to credentials.
   def self.site_key
-    Rails.application.credentials.dig(:turnstile, :site_key)
+    ENV["TURNSTILE_SITE_KEY"].presence || Rails.application.credentials.dig(:turnstile, :site_key)
   end
 
   # Returns the secret key for API verification.
+  # Checks ENV first (for Clever Cloud/PaaS), then falls back to credentials.
   def self.secret_key
-    Rails.application.credentials.dig(:turnstile, :secret_key)
+    ENV["TURNSTILE_SECRET_KEY"].presence || Rails.application.credentials.dig(:turnstile, :secret_key)
   end
 
   private
