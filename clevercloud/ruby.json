@@ -1,5 +1,5 @@
 {
   "deploy": {
-    "rakegoals": ["db:migrate", "assets:precompile"]
+    "rakegoals": ["db:migrate", "db:seed", "assets:precompile"]
   }
 }
