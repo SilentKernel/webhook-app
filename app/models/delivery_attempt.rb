@@ -12,14 +12,10 @@ class DeliveryAttempt < ApplicationRecord
   validates :request_method, presence: true
   validates :attempted_at, presence: true
 
-  def success?(expected_status_code = nil)
+  def success?
     return false if response_status.blank?
 
-    if expected_status_code.present?
-      response_status == expected_status_code
-    else
-      response_status >= 200 && response_status < 300
-    end
+    response_status >= 200 && response_status < 300
   end
 
   def duration_seconds

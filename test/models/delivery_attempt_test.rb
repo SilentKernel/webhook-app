@@ -141,42 +141,6 @@ class DeliveryAttemptTest < ActiveSupport::TestCase
     assert_not attempt.success?
   end
 
-  test "success? with expected_status_code returns true for exact match" do
-    attempt = DeliveryAttempt.new(response_status: 204)
-    assert attempt.success?(204)
-
-    attempt.response_status = 200
-    assert attempt.success?(200)
-  end
-
-  test "success? with expected_status_code returns false for non-match" do
-    attempt = DeliveryAttempt.new(response_status: 200)
-    assert_not attempt.success?(204)
-
-    attempt.response_status = 201
-    assert_not attempt.success?(200)
-  end
-
-  test "success? with expected_status_code accepts non-2xx codes" do
-    attempt = DeliveryAttempt.new(response_status: 500)
-    assert attempt.success?(500)
-
-    attempt.response_status = 404
-    assert attempt.success?(404)
-  end
-
-  test "success? without expected_status_code uses 2xx range" do
-    # 2xx codes should succeed without expected_status_code
-    attempt = DeliveryAttempt.new(response_status: 200)
-    assert attempt.success?
-    assert attempt.success?(nil)
-
-    # Non-2xx codes should fail without expected_status_code
-    attempt.response_status = 500
-    assert_not attempt.success?
-    assert_not attempt.success?(nil)
-  end
-
   test "duration_seconds converts duration_ms to seconds" do
     attempt = DeliveryAttempt.new(duration_ms: 1500)
     assert_equal 1.5, attempt.duration_seconds

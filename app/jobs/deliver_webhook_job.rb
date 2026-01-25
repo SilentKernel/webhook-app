@@ -17,7 +17,7 @@ class DeliverWebhookJob < ApplicationJob
     # Build and send request
     attempt = send_webhook(delivery, event, destination, connection)
 
-    if attempt.success?(destination.expected_status_code)
+    if attempt.success?
       delivery.mark_success!
     else
       delivery.mark_failed!
@@ -44,7 +44,7 @@ class DeliverWebhookJob < ApplicationJob
 
       delivery.delivery_attempts.create!(
         attempt_number: attempt_number,
-        status: response_success?(response, destination.expected_status_code) ? :success : :failed,
+        status: response.success? ? :success : :failed,
         request_url: destination.url,
         request_method: destination.http_method,
         request_headers: build_request_headers(event, destination, connection),
@@ -188,14 +188,6 @@ class DeliverWebhookJob < ApplicationJob
 
   def source_type_default_headers(connection)
     connection&.source&.source_type&.default_forward_headers || []
-  end
-
-  def response_success?(response, expected_status_code)
-    if expected_status_code.present?
-      response.status == expected_status_code
-    else
-      response.success? # Faraday's default 2xx check
-    end
   end
 
   def truncate_body(body)

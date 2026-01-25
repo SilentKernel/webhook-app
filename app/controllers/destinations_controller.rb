@@ -88,7 +88,7 @@ class DestinationsController < ApplicationController
   def destination_params
     params.require(:destination).permit(
       :name, :url, :http_method, :auth_type, :auth_value,
-      :status, :timeout_seconds, :max_delivery_rate, :expected_status_code,
+      :status, :timeout_seconds, :max_delivery_rate,
       notification_subscriber_ids: []
     ).tap do |p|
       if params[:destination][:headers].present?

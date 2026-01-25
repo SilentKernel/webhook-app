@@ -65,16 +65,6 @@
                 </td>
               </tr>
               <tr>
-                <th>Expected Status Code</th>
-                <td>
-                  <% if @destination.expected_status_code %>
-                    <span class="badge badge-outline"><%= @destination.expected_status_code %></span>
-                  <% else %>
-                    <span class="text-base-content/50">Any 2xx</span>
-                  <% end %>
-                </td>
-              </tr>
-              <tr>
                 <th>Custom Headers</th>
                 <td>
                   <% if @destination.headers.present? %>
