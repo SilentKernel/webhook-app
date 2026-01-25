@@ -10,15 +10,7 @@ class IngestController < ActionController::Base
   MAX_PAYLOAD_SIZE = 1.megabyte # 1,048,576 bytes
 
   def receive
-    # Check payload size first (before any other processing)
-    if payload_too_large?
-      render json: {
-        error: "Payload too large",
-        message: "Request body exceeds maximum allowed size of 1 MB"
-      }, status: :content_too_large
-      return
-    end
-    # Find source by ingest token
+    # Find source by ingest token first
     @source = Source.find_by(ingest_token: params[:token])
 
     unless @source
@@ -32,16 +24,31 @@ class IngestController < ActionController::Base
       return
     end
 
-    # Verify signature if configured
-    unless verify_signature
-      render json: { error: "Invalid signature" }, status: :unauthorized
+    # Check payload size - create event for tracking if too large
+    if payload_too_large?
+      @event = create_event(status: :payload_too_large, store_body: false)
+      render json: {
+        error: "Payload too large",
+        message: "Request body exceeds maximum allowed size of 1 MB",
+        event_id: @event.uid
+      }, status: :content_too_large
       return
     end
 
-    # Create event
+    # Create event first (we'll update status if verification fails)
     @event = create_event
 
-    # Queue for processing
+    # Verify signature if configured
+    unless verify_signature
+      @event.update!(status: :authentication_failed)
+      render json: {
+        error: "Invalid signature",
+        event_id: @event.uid
+      }, status: :unauthorized
+      return
+    end
+
+    # Queue for processing (only for successfully received events)
     ProcessWebhookJob.perform_later(@event.id)
 
     # Return success (202 Accepted - we've queued it)
@@ -79,21 +86,34 @@ class IngestController < ActionController::Base
     end
   end
 
-  def create_event
+  def create_event(status: :received, store_body: true)
     raw_body = request.raw_post
     is_binary = binary_content?
-    payload = request_payload(raw_body)
+
+    if store_body
+      payload = request_payload(raw_body)
+      stored_body = raw_body
+    else
+      # For oversized payloads, store only metadata
+      payload = {
+        _error: "payload_too_large",
+        _size: raw_body.bytesize,
+        _content_type: request.content_type
+      }
+      stored_body = nil
+    end
 
     @source.events.create!(
+      status: status,
       payload: payload,
-      raw_body: raw_body,
+      raw_body: stored_body,
       body_is_binary: is_binary,
       body_size: raw_body.bytesize,
       headers: request_headers,
       query_params: request.query_parameters,
       source_ip: request.remote_ip,
       content_type: request.content_type,
-      event_type: extract_event_type(payload),
+      event_type: store_body ? extract_event_type(payload) : nil,
       received_at: Time.current
     )
   end

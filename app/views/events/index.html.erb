@@ -46,10 +46,22 @@
         </div>
 
         <div class="form-control">
+          <label class="label">
+            <span class="label-text">Status</span>
+          </label>
+          <select name="status" class="select select-bordered w-full max-w-xs">
+            <option value="">All Statuses</option>
+            <option value="received" <%= "selected" if params[:status] == "received" %>>Received</option>
+            <option value="authentication_failed" <%= "selected" if params[:status] == "authentication_failed" %>>Auth Failed</option>
+            <option value="payload_too_large" <%= "selected" if params[:status] == "payload_too_large" %>>Too Large</option>
+          </select>
+        </div>
+
+        <div class="form-control">
           <button type="submit" class="btn btn-primary">Apply</button>
         </div>
 
-        <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? %>
+        <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? || params[:status].present? %>
           <div class="form-control">
             <%= link_to "Clear", events_path, class: "btn btn-ghost" %>
           </div>
@@ -69,6 +81,7 @@
                 <th>UID</th>
                 <th>Source</th>
                 <th>Event Type</th>
+                <th>Status</th>
                 <th>Received</th>
                 <th>Deliveries</th>
                 <th>Actions</th>
@@ -85,6 +98,9 @@
                   </td>
                   <td>
                     <span class="badge badge-outline"><%= event.event_type || "—" %></span>
+                  </td>
+                  <td>
+                    <%= event_status_badge(event.status) %>
                   </td>
                   <td>
                     <%= relative_time(event.received_at) %>
@@ -114,7 +130,7 @@
           </svg>
           <h3 class="mt-4 text-lg font-medium">No events yet</h3>
           <p class="mt-2 text-base-content/60">Events will appear here when your sources receive webhooks.</p>
-          <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? %>
+          <% if params[:source_id].present? || params[:event_type].present? || params[:since].present? || params[:until].present? || params[:status].present? %>
             <div class="mt-6">
               <%= link_to "Clear Filters", events_path, class: "btn btn-outline" %>
             </div>

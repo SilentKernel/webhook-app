@@ -12,12 +12,33 @@
       <h1 class="text-3xl font-bold mt-2 font-mono text-lg"><%= @event.uid %></h1>
     </div>
     <div class="flex gap-2">
-      <%= button_to "Replay", replay_event_path(@event),
-          method: :post,
-          class: "btn btn-primary",
-          data: { turbo_confirm: "This will re-send the event to all active connections. Continue?" } %>
+      <% if @event.replayable? %>
+        <%= button_to "Replay", replay_event_path(@event),
+            method: :post,
+            class: "btn btn-primary",
+            data: { turbo_confirm: "This will re-send the event to all active connections. Continue?" } %>
+      <% else %>
+        <span class="btn btn-disabled" title="Cannot replay events that failed validation">Replay</span>
+      <% end %>
     </div>
   </div>
+
+  <% unless @event.received? %>
+    <div role="alert" class="alert <%= @event.authentication_failed? ? 'alert-error' : 'alert-warning' %>">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <div>
+        <% if @event.authentication_failed? %>
+          <h3 class="font-bold">Authentication Failed</h3>
+          <p class="text-sm">This webhook failed signature verification and was not delivered to any destinations. The payload is stored for debugging purposes.</p>
+        <% else %>
+          <h3 class="font-bold">Payload Too Large</h3>
+          <p class="text-sm">This webhook exceeded the 1 MB size limit and was not delivered. Only metadata was stored.</p>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
 
   <div class="grid lg:grid-cols-2 gap-6">
     <div class="card bg-base-100 shadow-xl">
@@ -31,6 +52,10 @@
                 <td>
                   <%= link_to @event.source.name, source_path(@event.source), class: "link link-hover" %>
                 </td>
+              </tr>
+              <tr>
+                <th>Status</th>
+                <td><%= event_status_badge(@event.status) %></td>
               </tr>
               <tr>
                 <th>Event Type</th>

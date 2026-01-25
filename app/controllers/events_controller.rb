@@ -16,6 +16,7 @@ class EventsController < ApplicationController
     events = events.by_event_type(params[:event_type]) if params[:event_type].present?
     events = events.since(Time.zone.parse(params[:since])) if params[:since].present?
     events = events.until(Time.zone.parse(params[:until])) if params[:until].present?
+    events = events.by_status(params[:status]) if params[:status].present?
 
     @pagy, @events = pagy(:offset, events)
   end
@@ -25,6 +26,11 @@ class EventsController < ApplicationController
   end
 
   def replay
+    unless @event.replayable?
+      redirect_to event_path(@event), alert: "Cannot replay events that failed validation."
+      return
+    end
+
     connections = @event.source.connections.active
 
     if connections.empty?

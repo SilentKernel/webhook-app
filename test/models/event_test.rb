@@ -133,4 +133,64 @@ class EventTest < ActiveSupport::TestCase
     )
     assert event.valid?
   end
+
+  # Status enum tests
+  test "status defaults to received" do
+    event = Event.create!(
+      source: sources(:stripe_production),
+      received_at: Time.current
+    )
+    assert_equal "received", event.status
+    assert event.received?
+  end
+
+  test "status can be authentication_failed" do
+    event = Event.create!(
+      source: sources(:stripe_production),
+      received_at: Time.current,
+      status: :authentication_failed
+    )
+    assert_equal "authentication_failed", event.status
+    assert event.authentication_failed?
+  end
+
+  test "status can be payload_too_large" do
+    event = Event.create!(
+      source: sources(:stripe_production),
+      received_at: Time.current,
+      status: :payload_too_large
+    )
+    assert_equal "payload_too_large", event.status
+    assert event.payload_too_large?
+  end
+
+  test "scope by_status filters by status" do
+    # Create events with different statuses
+    Event.create!(source: sources(:stripe_production), received_at: Time.current, status: :received)
+    Event.create!(source: sources(:stripe_production), received_at: Time.current, status: :authentication_failed)
+    Event.create!(source: sources(:stripe_production), received_at: Time.current, status: :payload_too_large)
+
+    received_events = Event.by_status(:received)
+    auth_failed_events = Event.by_status(:authentication_failed)
+    too_large_events = Event.by_status(:payload_too_large)
+
+    assert received_events.all?(&:received?)
+    assert auth_failed_events.all?(&:authentication_failed?)
+    assert too_large_events.all?(&:payload_too_large?)
+  end
+
+  test "replayable? returns true for received events" do
+    event = Event.new(status: :received)
+    assert event.replayable?
+  end
+
+  test "replayable? returns false for authentication_failed events" do
+    event = Event.new(status: :authentication_failed)
+    assert_not event.replayable?
+  end
+
+  test "replayable? returns false for payload_too_large events" do
+    event = Event.new(status: :payload_too_large)
+    assert_not event.replayable?
+  end
 end

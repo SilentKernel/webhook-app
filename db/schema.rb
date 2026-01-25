@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_24_200001) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_25_111500) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -111,12 +111,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_24_200001) do
     t.datetime "received_at", null: false
     t.bigint "source_id", null: false
     t.string "source_ip"
+    t.integer "status", default: 0, null: false
     t.string "uid", null: false
     t.datetime "updated_at", null: false
     t.index ["event_type"], name: "index_events_on_event_type"
     t.index ["received_at"], name: "index_events_on_received_at"
     t.index ["source_id", "received_at"], name: "index_events_on_source_id_and_received_at"
     t.index ["source_id"], name: "index_events_on_source_id"
+    t.index ["status"], name: "index_events_on_status"
     t.index ["uid"], name: "index_events_on_uid", unique: true
   end
 

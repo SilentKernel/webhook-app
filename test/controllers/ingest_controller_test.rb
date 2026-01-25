@@ -212,7 +212,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert event.json?
   end
 
-  test "returns 401 for invalid stripe signature" do
+  test "returns 401 for invalid stripe signature and includes event_id in response" do
     @source.update!(verification_type: verification_types(:stripe), verification_secret: "whsec_test_secret")
 
     post ingest_url(token: @source.ingest_token),
@@ -225,6 +225,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert_response :unauthorized
     json_response = JSON.parse(response.body)
     assert_equal "Invalid signature", json_response["error"]
+    assert_not_nil json_response["event_id"] # Event is created for debugging
   end
 
   test "accepts valid stripe signature" do
@@ -246,10 +247,11 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
   end
 
-  test "returns 413 for payload exceeding 1 MB" do
+  test "returns 413 for payload exceeding 1 MB and creates event with payload_too_large status" do
     large_payload = "x" * (1.megabyte + 1)
 
-    assert_no_difference "Event.count" do
+    # Event SHOULD be created with payload_too_large status
+    assert_difference "Event.count", 1 do
       post ingest_url(token: @source.ingest_token),
            params: large_payload,
            headers: { "Content-Type" => "text/plain" }
@@ -259,6 +261,13 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     json_response = JSON.parse(response.body)
     assert_equal "Payload too large", json_response["error"]
     assert_equal "Request body exceeds maximum allowed size of 1 MB", json_response["message"]
+
+    # Verify event status
+    event = Event.last
+    assert event.payload_too_large?
+    assert_nil event.raw_body # Body not stored for too large payloads
+    assert_equal large_payload.bytesize, event.body_size
+    assert_equal json_response["event_id"], event.uid
   end
 
   test "accepts payload exactly at 1 MB limit" do
@@ -285,14 +294,80 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert_response :accepted
   end
 
-  test "rejects large payload before checking token" do
+  test "returns 404 for invalid token even with large payload" do
     large_payload = "x" * (1.megabyte + 1)
 
-    # Use an invalid token - should still get 413, not 404
-    post ingest_url(token: "invalid_token"),
-         params: large_payload,
-         headers: { "Content-Type" => "text/plain" }
+    # With the new flow, we check token FIRST, so invalid token = 404
+    assert_no_difference "Event.count" do
+      post ingest_url(token: "invalid_token"),
+           params: large_payload,
+           headers: { "Content-Type" => "text/plain" }
+    end
+
+    assert_response :not_found
+  end
+
+  test "does not queue ProcessWebhookJob when payload too large" do
+    large_payload = "x" * (1.megabyte + 1)
+
+    assert_no_enqueued_jobs(only: ProcessWebhookJob) do
+      post ingest_url(token: @source.ingest_token),
+           params: large_payload,
+           headers: { "Content-Type" => "text/plain" }
+    end
 
     assert_response :content_too_large
+  end
+
+  test "creates event with authentication_failed status when signature is invalid" do
+    @source.update!(verification_type: verification_types(:stripe), verification_secret: "whsec_test_secret")
+
+    # Event SHOULD be created with authentication_failed status
+    assert_difference "Event.count", 1 do
+      post ingest_url(token: @source.ingest_token),
+           params: { type: "test.event" }.to_json,
+           headers: {
+             "Content-Type" => "application/json",
+             "Stripe-Signature" => "invalid_signature"
+           }
+    end
+
+    assert_response :unauthorized
+    json_response = JSON.parse(response.body)
+    assert_equal "Invalid signature", json_response["error"]
+
+    # Verify event status
+    event = Event.last
+    assert event.authentication_failed?
+    assert_equal json_response["event_id"], event.uid
+    # Body IS stored for auth failures (for debugging)
+    assert_not_nil event.raw_body
+  end
+
+  test "does not queue ProcessWebhookJob when authentication fails" do
+    @source.update!(verification_type: verification_types(:stripe), verification_secret: "whsec_test_secret")
+
+    assert_no_enqueued_jobs(only: ProcessWebhookJob) do
+      post ingest_url(token: @source.ingest_token),
+           params: { type: "test.event" }.to_json,
+           headers: {
+             "Content-Type" => "application/json",
+             "Stripe-Signature" => "invalid_signature"
+           }
+    end
+
+    assert_response :unauthorized
+  end
+
+  test "event has received status when all checks pass" do
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :accepted
+    event = Event.last
+    assert event.received?
   end
 end

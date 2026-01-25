@@ -5,6 +5,12 @@ class Event < ApplicationRecord
   has_many :deliveries, dependent: :destroy
   has_one :organization, through: :source
 
+  enum :status, {
+    received: 0,
+    authentication_failed: 1,
+    payload_too_large: 2
+  }, default: :received
+
   validates :uid, presence: true, uniqueness: true
   validates :received_at, presence: true
 
@@ -14,6 +20,12 @@ class Event < ApplicationRecord
   scope :by_event_type, ->(type) { where(event_type: type) }
   scope :since, ->(time) { where("received_at >= ?", time) }
   scope :until, ->(time) { where("received_at <= ?", time) }
+  scope :by_status, ->(status) { where(status: status) }
+
+  # Check if this event can be replayed (only successfully received events can be replayed)
+  def replayable?
+    received?
+  end
 
   # Content-type detection helpers
   def json?

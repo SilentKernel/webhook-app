@@ -65,6 +65,17 @@ module ApplicationHelper
     content_tag(:span, status.to_s.titleize, class: "badge #{css_class}")
   end
 
+  # Badge for event reception statuses (received, authentication_failed, payload_too_large)
+  def event_status_badge(status)
+    config = {
+      "received" => { class: "badge-success", label: "Received" },
+      "authentication_failed" => { class: "badge-error", label: "Auth Failed" },
+      "payload_too_large" => { class: "badge-warning", label: "Too Large" }
+    }
+    badge = config[status.to_s] || { class: "badge-ghost", label: status.to_s.titleize }
+    content_tag(:span, badge[:label], class: "badge #{badge[:class]}")
+  end
+
   # Delivery status summary for event index (e.g., "2/2 ✓")
   def delivery_status_summary(event)
     total = event.deliveries.size
