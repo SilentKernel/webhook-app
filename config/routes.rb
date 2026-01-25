@@ -9,7 +9,7 @@ Rails.application.routes.draw do
   end
 
   # Health check for load balancers
-  get "up" => "health#show", as: :rails_health_check
+  get "up" => "rails/health#show", as: :rails_health_check
 
   # Webhook ingest endpoint (public, no auth required)
   post "/ingest/:token", to: "ingest#receive", as: :ingest
