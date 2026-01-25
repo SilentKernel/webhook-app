@@ -63,21 +63,79 @@
     </div>
   </div>
 
-  <div class="form-control w-full">
-    <%= f.label :rules, class: "label" do %>
-      <span class="label-text">Rules (JSON)</span>
+  <fieldset class="fieldset border border-base-300 rounded-lg p-4"
+            data-controller="rules-editor"
+            data-rules-editor-rules-value="<%= connection.rules.to_json %>"
+            data-rules-editor-connections-value="<%= @connections_with_rules.to_json %>">
+    <legend class="text-sm font-medium px-2">Rules Configuration</legend>
+
+    <input type="hidden"
+           name="connection[rules]"
+           data-rules-editor-target="hiddenField"
+           value="<%= connection.rules.present? ? connection.rules.to_json : '' %>">
+
+    <% if @connections_with_rules.present? %>
+      <div class="mb-4 flex flex-wrap items-center gap-2">
+        <span class="text-sm text-base-content/60">Import from:</span>
+        <select class="select select-bordered select-sm"
+                data-rules-editor-target="importSelect">
+          <option value="">Select connection...</option>
+          <% @connections_with_rules.each do |conn| %>
+            <% next if conn.id == connection.id %>
+            <option value="<%= conn.id %>"><%= conn.name.presence || "Connection ##{conn.id}" %></option>
+          <% end %>
+        </select>
+        <button type="button"
+                class="btn btn-sm btn-ghost"
+                data-action="click->rules-editor#importRules">
+          Import
+        </button>
+      </div>
     <% end %>
-    <%= f.text_area :rules,
-        value: connection.rules.present? ? JSON.pretty_generate(connection.rules) : "",
-        class: "textarea textarea-bordered w-full font-mono text-sm",
-        rows: 6,
-        placeholder: '[
-  {"type": "filter", "config": {"event_types": ["payment.completed"]}}
-]' %>
-    <label class="label">
-      <span class="label-text-alt text-base-content/60">Optional filtering and transformation rules (JSON array format)</span>
-    </label>
-  </div>
+
+    <div class="mb-4">
+      <label class="label">
+        <span class="label-text font-medium">Event Type Filter</span>
+      </label>
+      <div class="bg-base-200 rounded-lg p-3">
+        <div class="flex flex-wrap gap-2 mb-3" data-rules-editor-target="eventTypesContainer">
+        </div>
+        <div class="flex gap-2">
+          <input type="text"
+                 class="input input-bordered input-sm flex-1"
+                 placeholder="Enter event type (e.g., payment.completed)"
+                 data-rules-editor-target="eventTypeInput"
+                 data-action="keydown->rules-editor#addEventTypeOnEnter">
+          <button type="button"
+                  class="btn btn-sm btn-primary"
+                  data-action="click->rules-editor#addEventType">
+            Add
+          </button>
+        </div>
+      </div>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Leave empty to forward all events</span>
+      </label>
+    </div>
+
+    <div>
+      <label class="label">
+        <span class="label-text font-medium">Delivery Delay (optional)</span>
+      </label>
+      <div class="flex items-center gap-2">
+        <input type="number"
+               class="input input-bordered input-sm w-24"
+               min="0"
+               value="0"
+               data-rules-editor-target="delayInput"
+               data-action="change->rules-editor#updateDelay">
+        <span class="text-sm text-base-content/60">seconds</span>
+      </div>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Add a delay before delivering webhooks to this destination</span>
+      </label>
+    </div>
+  </fieldset>
 
   <fieldset class="fieldset border border-base-300 rounded-lg p-4" data-controller="header-forwarding">
     <legend class="text-sm font-medium px-2">Header Forwarding</legend>

@@ -31,3 +31,11 @@ other_org_connection:
   rules: []
   status: 0
   priority: 0
+
+connection_with_rules:
+  source: paused_source
+  destination: disabled_destination
+  name: Connection with Rules
+  rules: <%= [{ "type" => "filter", "config" => { "event_types" => ["payment.completed", "checkout.session.completed"] } }, { "type" => "delay", "config" => { "seconds" => 30 } }].to_json %>
+  status: 1
+  priority: 3

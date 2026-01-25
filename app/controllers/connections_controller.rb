@@ -86,6 +86,10 @@ class ConnectionsController < ApplicationController
   def load_sources_and_destinations
     @sources = current_organization.sources.active
     @destinations = current_organization.destinations.where(status: [ :active, :paused ])
+    @connections_with_rules = Connection.joins(:source)
+      .where(sources: { organization_id: current_organization.id })
+      .where.not(rules: [ nil, [] ])
+      .select(:id, :name, :rules)
   end
 
   def connection_params
