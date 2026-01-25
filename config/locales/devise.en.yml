@@ -18,15 +18,15 @@ en:
       unconfirmed: "You have to confirm your email address before continuing."
     mailer:
       confirmation_instructions:
-        subject: "Confirmation instructions"
+        subject: "HookStack.io - Please confirm your email address"
       reset_password_instructions:
-        subject: "Reset password instructions"
+        subject: "HookStack.io - Reset your password"
       unlock_instructions:
-        subject: "Unlock instructions"
+        subject: "HookStack.io - Unlock your account"
       email_changed:
-        subject: "Email Changed"
+        subject: "HookStack.io - Your email address has been updated"
       password_change:
-        subject: "Password Changed"
+        subject: "HookStack.io - Your password has been updated"
     omniauth_callbacks:
       failure: "Could not authenticate you from %{kind} because \"%{reason}\"."
       success: "Successfully authenticated from %{kind} account."

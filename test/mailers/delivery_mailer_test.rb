@@ -17,7 +17,7 @@ class DeliveryMailerTest < ActionMailer::TestCase
     end
 
     assert_equal [@user.email], email.to
-    assert_equal "Webhook delivery failed: #{@destination.name}", email.subject
+    assert_equal "HookStack.io - Heads up! Delivery to #{@destination.name} failed", email.subject
   end
 
   test "failure_notification includes destination name in body" do

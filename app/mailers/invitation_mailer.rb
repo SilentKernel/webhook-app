@@ -8,7 +8,7 @@ class InvitationMailer < ApplicationMailer
 
     mail(
       to: @invitation.email,
-      subject: "You're invited to join #{@organization.name} on Webhook App"
+      subject: "HookStack.io - You've been invited to join #{@organization.name}"
     )
   end
 end

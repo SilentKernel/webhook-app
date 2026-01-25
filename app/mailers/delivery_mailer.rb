@@ -9,7 +9,7 @@ class DeliveryMailer < ApplicationMailer
 
     mail(
       to: @user.email,
-      subject: "Webhook delivery failed: #{@destination.name}"
+      subject: "HookStack.io - Heads up! Delivery to #{@destination.name} failed"
     )
   end
 end
