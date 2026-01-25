@@ -89,9 +89,19 @@ class ConnectionsController < ApplicationController
   end
 
   def connection_params
-    params.require(:connection).permit(:source_id, :destination_id, :name, :status, :priority).tap do |p|
+    params.require(:connection).permit(:source_id, :destination_id, :name, :status, :priority, :forward_all_headers, :forward_headers).tap do |p|
       if params[:connection][:rules].present?
         p[:rules] = JSON.parse(params[:connection][:rules])
+      end
+
+      # Convert comma-separated string to array
+      if params[:connection][:forward_headers].present?
+        p[:forward_headers] = params[:connection][:forward_headers]
+          .split(",")
+          .map(&:strip)
+          .reject(&:blank?)
+      else
+        p[:forward_headers] = []
       end
     rescue JSON::ParserError
       # Let validation handle invalid JSON

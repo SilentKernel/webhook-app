@@ -12,9 +12,10 @@ class DeliverWebhookJob < ApplicationJob
 
     event = delivery.event
     destination = delivery.destination
+    connection = delivery.connection
 
     # Build and send request
-    attempt = send_webhook(delivery, event, destination)
+    attempt = send_webhook(delivery, event, destination, connection)
 
     if attempt.success?(destination.expected_status_code)
       delivery.mark_success!
@@ -33,20 +34,20 @@ class DeliverWebhookJob < ApplicationJob
 
   private
 
-  def send_webhook(delivery, event, destination)
+  def send_webhook(delivery, event, destination, connection)
     attempt_number = delivery.attempt_count + 1
     started_at = Time.current
     request_body = request_body_for(event)
 
     begin
-      response = make_request(event, destination)
+      response = make_request(event, destination, connection)
 
       delivery.delivery_attempts.create!(
         attempt_number: attempt_number,
         status: response_success?(response, destination.expected_status_code) ? :success : :failed,
         request_url: destination.url,
         request_method: destination.http_method,
-        request_headers: build_request_headers(event, destination),
+        request_headers: build_request_headers(event, destination, connection),
         request_body: truncate_body(request_body),
         response_status: response.status,
         response_headers: response.headers.to_h,
@@ -60,7 +61,7 @@ class DeliverWebhookJob < ApplicationJob
         status: :failed,
         request_url: destination.url,
         request_method: destination.http_method,
-        request_headers: build_request_headers(event, destination),
+        request_headers: build_request_headers(event, destination, connection),
         request_body: truncate_body(request_body),
         duration_ms: ((Time.current - started_at) * 1000).to_i,
         error_message: e.message,
@@ -70,7 +71,7 @@ class DeliverWebhookJob < ApplicationJob
     end
   end
 
-  def make_request(event, destination)
+  def make_request(event, destination, connection)
     timeout = destination.timeout_seconds || 30
 
     conn = Faraday.new do |f|
@@ -79,7 +80,7 @@ class DeliverWebhookJob < ApplicationJob
       f.adapter Faraday.default_adapter
     end
 
-    headers = build_request_headers(event, destination)
+    headers = build_request_headers(event, destination, connection)
     body = request_body_for(event)
 
     case destination.http_method.upcase
@@ -107,24 +108,36 @@ class DeliverWebhookJob < ApplicationJob
     end
   end
 
-  def build_request_headers(event, destination)
+  # Headers that should never be forwarded (hop-by-hop or conflict with destination)
+  BLOCKED_FORWARD_HEADERS = %w[
+    Host
+    Content-Length
+    Connection
+    Transfer-Encoding
+  ].map(&:downcase).freeze
+
+  def build_request_headers(event, destination, connection = nil)
+    # Start with forwarded headers if configured
+    headers = forwarded_headers(event, connection)
+
     # Use original content-type if raw_body present, fallback to JSON for legacy events
     content_type = event.raw_body.present? ? event.content_type : "application/json"
 
-    headers = {
+    # Base platform headers (override forwarded headers)
+    headers.merge!(
       "Content-Type" => content_type || "application/json",
       "User-Agent" => "WebhookPlatform/1.0",
       "X-Webhook-Event-Id" => event.uid,
       "X-Webhook-Event-Type" => event.event_type.to_s,
       "X-Webhook-Timestamp" => Time.current.iso8601
-    }
+    )
 
-    # Add custom headers from destination
+    # Add custom headers from destination (can override platform headers)
     if destination.headers.present?
       headers.merge!(destination.headers)
     end
 
-    # Add authentication
+    # Add authentication (highest priority)
     case destination.auth_type
     when "bearer"
       headers["Authorization"] = "Bearer #{destination.auth_value}"
@@ -143,6 +156,28 @@ class DeliverWebhookJob < ApplicationJob
     end
 
     headers
+  end
+
+  def forwarded_headers(event, connection)
+    return {} unless connection
+    return {} unless event.headers.present?
+
+    original_headers = event.headers
+
+    if connection.forward_all_headers?
+      # Forward all headers except blocklisted ones
+      original_headers.reject do |key, _value|
+        BLOCKED_FORWARD_HEADERS.include?(key.downcase)
+      end
+    elsif connection.forward_headers.present?
+      # Forward only specified headers (case-insensitive matching)
+      forward_list = connection.forward_headers.map(&:downcase)
+      original_headers.select do |key, _value|
+        forward_list.include?(key.downcase) && !BLOCKED_FORWARD_HEADERS.include?(key.downcase)
+      end
+    else
+      {}
+    end
   end
 
   def response_success?(response, expected_status_code)

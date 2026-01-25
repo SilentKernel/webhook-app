@@ -10,13 +10,15 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_25_111500) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_25_124940) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
   create_table "connections", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "destination_id", null: false
+    t.boolean "forward_all_headers", default: false, null: false
+    t.text "forward_headers", default: [], array: true
     t.string "name"
     t.integer "priority", default: 0
     t.jsonb "rules", default: []

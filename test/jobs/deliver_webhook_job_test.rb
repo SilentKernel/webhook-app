@@ -449,4 +449,174 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_equal "success", attempt.status
     assert_equal 201, attempt.response_status
   end
+
+  # Header forwarding tests
+
+  test "forwards all headers when forward_all_headers is enabled" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Stripe-Signature" => "sig_test_123",
+      "X-Custom-Header" => "custom_value",
+      "Content-Type" => "application/json"
+    })
+    @delivery.connection.update!(forward_all_headers: true)
+
+    stub_request(:post, @destination.url)
+      .with(headers: { "Stripe-Signature" => "sig_test_123", "X-Custom-Header" => "custom_value" })
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "sig_test_123", attempt.request_headers["Stripe-Signature"]
+    assert_equal "custom_value", attempt.request_headers["X-Custom-Header"]
+  end
+
+  test "does not forward blocklisted headers even with forward_all_headers enabled" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Host" => "original-host.com",
+      "Content-Length" => "1234",
+      "Connection" => "keep-alive",
+      "Transfer-Encoding" => "chunked",
+      "Stripe-Signature" => "sig_test_123"
+    })
+    @delivery.connection.update!(forward_all_headers: true)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # Blocklisted headers should not be in request_headers
+    assert_nil attempt.request_headers["Host"]
+    assert_nil attempt.request_headers["Content-Length"]
+    assert_nil attempt.request_headers["Connection"]
+    assert_nil attempt.request_headers["Transfer-Encoding"]
+
+    # But allowed headers should be forwarded
+    assert_equal "sig_test_123", attempt.request_headers["Stripe-Signature"]
+  end
+
+  test "forwards only specific headers when forward_headers is set" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Stripe-Signature" => "sig_test_123",
+      "X-Shopify-Hmac-SHA256" => "hmac_456",
+      "X-Other-Header" => "other_value"
+    })
+    @delivery.connection.update!(forward_all_headers: false, forward_headers: ["Stripe-Signature"])
+
+    stub_request(:post, @destination.url)
+      .with(headers: { "Stripe-Signature" => "sig_test_123" })
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "sig_test_123", attempt.request_headers["Stripe-Signature"]
+    assert_nil attempt.request_headers["X-Shopify-Hmac-SHA256"]
+    assert_nil attempt.request_headers["X-Other-Header"]
+  end
+
+  test "forward_headers uses case-insensitive matching" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Stripe-Signature" => "sig_test_123"
+    })
+    @delivery.connection.update!(forward_all_headers: false, forward_headers: ["stripe-signature"])
+
+    stub_request(:post, @destination.url)
+      .with(headers: { "Stripe-Signature" => "sig_test_123" })
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_equal "sig_test_123", attempt.request_headers["Stripe-Signature"]
+  end
+
+  test "platform headers override forwarded headers" do
+    event = @delivery.event
+    event.update!(
+      headers: { "User-Agent" => "OriginalAgent/1.0", "Stripe-Signature" => "sig_123" },
+      uid: "test-uid-456"
+    )
+    @delivery.connection.update!(forward_all_headers: true)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # Platform header should override the forwarded one
+    assert_equal "WebhookPlatform/1.0", attempt.request_headers["User-Agent"]
+    # But other forwarded headers should still be present
+    assert_equal "sig_123", attempt.request_headers["Stripe-Signature"]
+  end
+
+  test "does not forward headers when forwarding is not enabled" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Stripe-Signature" => "sig_test_123",
+      "X-Custom-Header" => "custom_value"
+    })
+    @delivery.connection.update!(forward_all_headers: false, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_nil attempt.request_headers["Stripe-Signature"]
+    assert_nil attempt.request_headers["X-Custom-Header"]
+  end
+
+  test "forward_all_headers takes precedence over forward_headers" do
+    event = @delivery.event
+    event.update!(headers: {
+      "Stripe-Signature" => "sig_test_123",
+      "X-Custom-Header" => "custom_value"
+    })
+    # Both are set, but forward_all_headers should take precedence
+    @delivery.connection.update!(forward_all_headers: true, forward_headers: ["Stripe-Signature"])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    # Both headers should be forwarded because forward_all_headers is true
+    assert_equal "sig_test_123", attempt.request_headers["Stripe-Signature"]
+    assert_equal "custom_value", attempt.request_headers["X-Custom-Header"]
+  end
+
+  test "handles empty event headers gracefully" do
+    event = @delivery.event
+    event.update!(headers: {})
+    @delivery.connection.update!(forward_all_headers: true)
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    assert_nothing_raised do
+      DeliverWebhookJob.perform_now(@delivery.id)
+    end
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+  end
 end

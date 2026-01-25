@@ -79,6 +79,38 @@
     </label>
   </div>
 
+  <fieldset class="fieldset border border-base-300 rounded-lg p-4" data-controller="header-forwarding">
+    <legend class="text-sm font-medium px-2">Header Forwarding</legend>
+    <p class="text-sm text-base-content/60 mb-4">
+      Forward original webhook headers (e.g., Stripe-Signature) to the destination for signature verification.
+    </p>
+
+    <div class="form-control">
+      <label class="label cursor-pointer justify-start gap-3">
+        <%= f.check_box :forward_all_headers,
+            class: "checkbox checkbox-primary",
+            data: { action: "header-forwarding#toggle" } %>
+        <span class="label-text">Forward all original headers</span>
+      </label>
+      <label class="label pt-0">
+        <span class="label-text-alt text-base-content/60">Forwards all headers except Host, Content-Length, Connection, and Transfer-Encoding</span>
+      </label>
+    </div>
+
+    <div class="form-control w-full mt-2" data-header-forwarding-target="specificHeaders">
+      <%= f.label :forward_headers, class: "label" do %>
+        <span class="label-text">Specific headers to forward</span>
+      <% end %>
+      <%= f.text_field :forward_headers,
+          value: connection.forward_headers&.join(", "),
+          class: "input input-bordered w-full",
+          placeholder: "Stripe-Signature, X-Shopify-Hmac-SHA256" %>
+      <label class="label">
+        <span class="label-text-alt text-base-content/60">Comma-separated list of header names to forward</span>
+      </label>
+    </div>
+  </fieldset>
+
   <div class="flex gap-4 mt-6">
     <%= f.submit connection.persisted? ? "Update Connection" : "Create Connection", class: "btn btn-primary flex-1" %>
     <%= link_to "Cancel", connection.persisted? ? connection_path(connection) : connections_path, class: "btn btn-ghost" %>
