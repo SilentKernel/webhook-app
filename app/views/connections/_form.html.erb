@@ -109,6 +109,19 @@
         <span class="label-text-alt text-base-content/60">Comma-separated list of header names to forward</span>
       </label>
     </div>
+
+    <div class="mt-3 p-3 bg-base-200 rounded-lg text-sm">
+      <p class="text-base-content/80">
+        <strong>Auto-forwarding:</strong> If you don't specify headers and don't enable "Forward all headers",
+        signature headers from the source type will be forwarded automatically:
+      </p>
+      <ul class="mt-2 ml-4 list-disc text-base-content/60 text-xs">
+        <li><strong>Stripe:</strong> Stripe-Signature</li>
+        <li><strong>Shopify:</strong> X-Shopify-Hmac-Sha256, X-Shopify-Topic, etc.</li>
+        <li><strong>GitHub:</strong> X-Hub-Signature-256, X-GitHub-Event, etc.</li>
+        <li><strong>Twilio:</strong> X-Twilio-Signature</li>
+      </ul>
+    </div>
   </fieldset>
 
   <div class="flex gap-4 mt-6">

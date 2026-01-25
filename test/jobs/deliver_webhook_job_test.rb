@@ -564,7 +564,11 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_equal "sig_123", attempt.request_headers["Stripe-Signature"]
   end
 
-  test "does not forward headers when forwarding is not enabled" do
+  test "does not forward headers when forwarding is not enabled and source type has no defaults" do
+    # Use a source with "none" source type (no default headers)
+    source = @delivery.event.source
+    source.update!(source_type: source_types(:none))
+
     event = @delivery.event
     event.update!(headers: {
       "Stripe-Signature" => "sig_test_123",
@@ -618,5 +622,188 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
 
     @delivery.reload
     assert_equal "success", @delivery.status
+  end
+
+  # Default header forwarding tests (source type defaults)
+
+  test "forwards source type default headers when no explicit forwarding is configured" do
+    # Use a source with Stripe source type (which has Stripe-Signature as default)
+    source = sources(:stripe_production)
+    assert_equal "stripe", source.source_type.slug
+    assert_includes source.source_type.default_forward_headers, "Stripe-Signature"
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "Stripe-Signature" => "t=123,v1=abc",
+        "X-Other-Header" => "other_value"
+      }
+    )
+
+    # Connection with no explicit forwarding
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: false, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # Stripe-Signature should be forwarded (source type default)
+    assert_equal "t=123,v1=abc", attempt.request_headers["Stripe-Signature"]
+    # X-Other-Header should NOT be forwarded
+    assert_nil attempt.request_headers["X-Other-Header"]
+  end
+
+  test "forwards GitHub source type default headers" do
+    source = sources(:github_webhook)
+    assert_equal "github", source.source_type.slug
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "X-Hub-Signature-256" => "sha256=abc123",
+        "X-GitHub-Event" => "push",
+        "X-GitHub-Delivery" => "delivery-123",
+        "X-Random-Header" => "random"
+      }
+    )
+
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: false, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # GitHub default headers should be forwarded
+    assert_equal "sha256=abc123", attempt.request_headers["X-Hub-Signature-256"]
+    assert_equal "push", attempt.request_headers["X-GitHub-Event"]
+    assert_equal "delivery-123", attempt.request_headers["X-GitHub-Delivery"]
+    # Random header should NOT be forwarded
+    assert_nil attempt.request_headers["X-Random-Header"]
+  end
+
+  test "explicit forward_headers takes precedence over source type defaults" do
+    source = sources(:stripe_production)
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "Stripe-Signature" => "sig_123",
+        "X-Custom-Header" => "custom_value"
+      }
+    )
+
+    # Explicitly specify only X-Custom-Header
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: false, forward_headers: ["X-Custom-Header"])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # X-Custom-Header should be forwarded (explicit)
+    assert_equal "custom_value", attempt.request_headers["X-Custom-Header"]
+    # Stripe-Signature should NOT be forwarded (explicit list takes precedence)
+    assert_nil attempt.request_headers["Stripe-Signature"]
+  end
+
+  test "forward_all_headers takes precedence over source type defaults" do
+    source = sources(:stripe_production)
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "Stripe-Signature" => "sig_123",
+        "X-Custom-Header" => "custom_value"
+      }
+    )
+
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: true, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # Both headers should be forwarded when forward_all_headers is true
+    assert_equal "sig_123", attempt.request_headers["Stripe-Signature"]
+    assert_equal "custom_value", attempt.request_headers["X-Custom-Header"]
+  end
+
+  test "does not forward any headers when source type has no defaults and no explicit forwarding" do
+    # Create a source without a source_type
+    source = sources(:stripe_production)
+    source.update!(source_type: nil)
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "Stripe-Signature" => "sig_123",
+        "X-Custom-Header" => "custom_value"
+      }
+    )
+
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: false, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # No headers should be forwarded
+    assert_nil attempt.request_headers["Stripe-Signature"]
+    assert_nil attempt.request_headers["X-Custom-Header"]
+  end
+
+  test "source type default headers use case-insensitive matching" do
+    source = sources(:stripe_production)
+
+    event = @delivery.event
+    event.update!(
+      source: source,
+      headers: {
+        "stripe-signature" => "sig_lowercase"  # lowercase
+      }
+    )
+
+    connection = @delivery.connection
+    connection.update!(source: source, forward_all_headers: false, forward_headers: [])
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200)
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+
+    # Should match case-insensitively
+    assert_equal "sig_lowercase", attempt.request_headers["stripe-signature"]
   end
 end

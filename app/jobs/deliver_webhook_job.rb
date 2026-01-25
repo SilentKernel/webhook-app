@@ -175,9 +175,19 @@ class DeliverWebhookJob < ApplicationJob
       original_headers.select do |key, _value|
         forward_list.include?(key.downcase) && !BLOCKED_FORWARD_HEADERS.include?(key.downcase)
       end
+    elsif (default_headers = source_type_default_headers(connection)).present?
+      # Forward source type default headers (e.g., Stripe-Signature for Stripe sources)
+      forward_list = default_headers.map(&:downcase)
+      original_headers.select do |key, _value|
+        forward_list.include?(key.downcase) && !BLOCKED_FORWARD_HEADERS.include?(key.downcase)
+      end
     else
       {}
     end
+  end
+
+  def source_type_default_headers(connection)
+    connection&.source&.source_type&.default_forward_headers || []
   end
 
   def response_success?(response, expected_status_code)

@@ -5,6 +5,8 @@ stripe:
   slug: stripe
   verification_type: stripe
   default_config: {}
+  default_forward_headers:
+    - Stripe-Signature
   active: true
 
 github:
@@ -12,6 +14,11 @@ github:
   slug: github
   verification_type: github
   default_config: {}
+  default_forward_headers:
+    - X-Hub-Signature-256
+    - X-GitHub-Event
+    - X-GitHub-Delivery
+    - X-GitHub-Hook-ID
   active: true
 
 hmac:
@@ -19,6 +26,10 @@ hmac:
   slug: hmac
   verification_type: hmac
   default_config: {}
+  default_forward_headers:
+    - X-Signature
+    - X-Webhook-Signature
+    - X-Hmac-Signature
   active: true
 
 inactive:
@@ -26,4 +37,13 @@ inactive:
   slug: inactive
   verification_type: none
   default_config: {}
+  default_forward_headers: []
   active: false
+
+none:
+  name: None / Custom
+  slug: none
+  verification_type: none
+  default_config: {}
+  default_forward_headers: []
+  active: true

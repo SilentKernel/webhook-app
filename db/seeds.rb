@@ -27,20 +27,62 @@ end
 
 # SourceType seeds - preset configurations for common webhook providers
 source_types = [
-  { name: "Stripe", slug: "stripe", verification_type_slug: "stripe" },
-  { name: "Shopify", slug: "shopify", verification_type_slug: "shopify" },
-  { name: "GitHub", slug: "github", verification_type_slug: "github" },
-  { name: "Twilio", slug: "twilio", verification_type_slug: "hmac" },
-  { name: "Generic HMAC", slug: "hmac", verification_type_slug: "hmac" },
-  { name: "None / Custom", slug: "none", verification_type_slug: "none" }
+  {
+    name: "Stripe",
+    slug: "stripe",
+    verification_type_slug: "stripe",
+    default_forward_headers: %w[Stripe-Signature]
+  },
+  {
+    name: "Shopify",
+    slug: "shopify",
+    verification_type_slug: "shopify",
+    default_forward_headers: %w[
+      X-Shopify-Hmac-Sha256
+      X-Shopify-Topic
+      X-Shopify-Shop-Domain
+      X-Shopify-Webhook-Id
+      X-Shopify-API-Version
+    ]
+  },
+  {
+    name: "GitHub",
+    slug: "github",
+    verification_type_slug: "github",
+    default_forward_headers: %w[
+      X-Hub-Signature-256
+      X-GitHub-Event
+      X-GitHub-Delivery
+      X-GitHub-Hook-ID
+    ]
+  },
+  {
+    name: "Twilio",
+    slug: "twilio",
+    verification_type_slug: "hmac",
+    default_forward_headers: %w[X-Twilio-Signature I-Twilio-Idempotency-Token]
+  },
+  {
+    name: "Generic HMAC",
+    slug: "hmac",
+    verification_type_slug: "hmac",
+    default_forward_headers: %w[X-Signature X-Webhook-Signature X-Hmac-Signature]
+  },
+  {
+    name: "None / Custom",
+    slug: "none",
+    verification_type_slug: "none",
+    default_forward_headers: []
+  }
 ]
 
 source_types.each do |attrs|
   vtype = VerificationType.find_by!(slug: attrs[:verification_type_slug])
-  SourceType.find_or_create_by!(slug: attrs[:slug]) do |st|
-    st.name = attrs[:name]
-    st.verification_type = vtype
-  end
+  st = SourceType.find_or_initialize_by(slug: attrs[:slug])
+  st.name = attrs[:name]
+  st.verification_type = vtype
+  st.default_forward_headers = attrs[:default_forward_headers]
+  st.save!
 end
 
 # Development seeds - only run in development environment
