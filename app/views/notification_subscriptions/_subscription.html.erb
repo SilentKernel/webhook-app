@@ -1,8 +1,8 @@
 <%= turbo_frame_tag subscription do %>
   <div class="flex items-center justify-between p-3 bg-base-200 rounded-lg">
-    <div class="flex-1">
+    <div class="flex-1 min-w-0">
       <p class="font-medium"><%= subscription.destination.name %></p>
-      <p class="text-sm text-base-content/60 truncate"><%= subscription.destination.url %></p>
+      <p class="text-sm text-base-content/60 break-all"><%= subscription.destination.url %></p>
     </div>
     <%= button_to notification_subscription_path(subscription),
                   method: :delete,

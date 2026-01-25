@@ -183,6 +183,36 @@ class DeliveryTest < ActiveSupport::TestCase
     assert_not delivery.can_retry?
   end
 
+  test "retryable? returns true when status is failed" do
+    delivery = deliveries(:failed_delivery)
+    assert delivery.failed?
+    assert delivery.retryable?
+  end
+
+  test "retryable? returns false when status is success" do
+    delivery = deliveries(:successful_delivery)
+    assert delivery.success?
+    assert_not delivery.retryable?
+  end
+
+  test "retryable? returns false when status is pending" do
+    delivery = deliveries(:pending_delivery)
+    assert delivery.pending?
+    assert_not delivery.retryable?
+  end
+
+  test "retryable? returns false when status is queued" do
+    delivery = deliveries(:queued_delivery)
+    assert delivery.queued?
+    assert_not delivery.retryable?
+  end
+
+  test "retryable? returns false when status is delivering" do
+    delivery = deliveries(:delivering_delivery)
+    assert delivery.delivering?
+    assert_not delivery.retryable?
+  end
+
   test "mark_success! updates status, completed_at, and increments attempt_count" do
     delivery = deliveries(:pending_delivery)
     original_count = delivery.attempt_count

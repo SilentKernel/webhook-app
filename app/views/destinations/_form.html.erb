@@ -139,7 +139,7 @@ end %>
 
     <div class="form-control w-full">
       <label class="label">
-        <span class="label-text">Notify on permanent failure</span>
+        <span class="label-text">Notify on failure</span>
       </label>
       <div class="bg-base-200 rounded-lg p-4 space-y-2 max-h-48 overflow-y-auto">
         <% @org_members.each do |member| %>
@@ -157,7 +157,7 @@ end %>
         <% end %>
       </div>
       <label class="label">
-        <span class="label-text-alt text-base-content/60">Selected users will receive an email when a delivery permanently fails (after all retries exhausted)</span>
+        <span class="label-text-alt text-base-content/60">Selected users will receive an email when a delivery fails (maximum 1 email per 10 minutes)</span>
       </label>
     </div>
   <% end %>

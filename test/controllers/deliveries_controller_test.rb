@@ -63,4 +63,55 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
     get delivery_url(other_org_delivery, locale: :en)
     assert_response :not_found
   end
+
+  # Retry tests
+  test "should retry failed delivery" do
+    post retry_delivery_url(@failed_delivery, locale: :en)
+    assert_redirected_to delivery_url(@failed_delivery, locale: :en)
+    assert_equal "Delivery queued for retry.", flash[:notice]
+
+    @failed_delivery.reload
+    assert @failed_delivery.queued?
+    assert_nil @failed_delivery.next_attempt_at
+  end
+
+  test "should not retry successful delivery" do
+    post retry_delivery_url(@successful_delivery, locale: :en)
+    assert_redirected_to delivery_url(@successful_delivery, locale: :en)
+    assert_equal "Cannot retry this delivery.", flash[:alert]
+
+    @successful_delivery.reload
+    assert @successful_delivery.success?
+  end
+
+  test "should not retry pending delivery" do
+    post retry_delivery_url(@pending_delivery, locale: :en)
+    assert_redirected_to delivery_url(@pending_delivery, locale: :en)
+    assert_equal "Cannot retry this delivery.", flash[:alert]
+
+    @pending_delivery.reload
+    assert @pending_delivery.pending?
+  end
+
+  test "should enqueue job when retrying failed delivery" do
+    assert_enqueued_with(job: DeliverWebhookJob, args: [@failed_delivery.id]) do
+      post retry_delivery_url(@failed_delivery, locale: :en)
+    end
+  end
+
+  test "should not retry delivery from another organization" do
+    other_org_event = events(:other_org_event)
+    other_org_connection = connections(:other_org_connection)
+    other_org_destination = destinations(:other_org_destination)
+    other_org_delivery = Delivery.create!(
+      event: other_org_event,
+      connection: other_org_connection,
+      destination: other_org_destination,
+      status: :failed,
+      max_attempts: 5
+    )
+
+    post retry_delivery_url(other_org_delivery, locale: :en)
+    assert_response :not_found
+  end
 end

@@ -96,7 +96,11 @@ Rails.application.routes.draw do
       end
     end
 
-    resources :deliveries, only: [:index, :show]
+    resources :deliveries, only: [:index, :show] do
+      member do
+        post :retry
+      end
+    end
 
     # Notification subscriptions management
     resources :notification_subscriptions, only: [:destroy]

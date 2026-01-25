@@ -11,6 +11,16 @@
       </div>
       <h1 class="text-3xl font-bold mt-2">Delivery Details</h1>
     </div>
+    <div class="flex gap-2">
+      <% if @delivery.retryable? %>
+        <%= button_to "Retry Now", retry_delivery_path(@delivery),
+            method: :post,
+            class: "btn btn-primary",
+            data: { turbo_confirm: "This will immediately retry the delivery. Continue?" } %>
+      <% else %>
+        <span class="btn btn-disabled" title="Can only retry failed deliveries">Retry Now</span>
+      <% end %>
+    </div>
   </div>
 
   <div class="grid lg:grid-cols-2 gap-6">

@@ -3,7 +3,7 @@
 class DeliveriesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
-  before_action :set_delivery, only: [ :show ]
+  before_action :set_delivery, only: [ :show, :retry ]
 
   def index
     @destinations = current_organization.destinations
@@ -21,6 +21,18 @@ class DeliveriesController < ApplicationController
 
   def show
     @attempts = @delivery.delivery_attempts.order(attempt_number: :asc)
+  end
+
+  def retry
+    unless @delivery.retryable?
+      redirect_to delivery_path(@delivery), alert: "Cannot retry this delivery."
+      return
+    end
+
+    @delivery.update!(status: :queued, next_attempt_at: nil)
+    DeliverWebhookJob.perform_later(@delivery.id)
+
+    redirect_to delivery_path(@delivery), notice: "Delivery queued for retry."
   end
 
   private
