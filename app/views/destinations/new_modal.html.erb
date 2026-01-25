@@ -1,7 +1,7 @@
 <%= turbo_frame_tag "modal" do %>
   <div data-controller="modal" data-action="keydown@window->modal#keydown">
     <dialog data-modal-target="dialog" class="modal" data-action="click->modal#backdropClick">
-      <div class="modal-box max-w-2xl">
+      <div class="modal-box max-w-4xl">
         <div class="flex justify-between items-center mb-4">
           <h3 class="text-lg font-bold">Create New Destination</h3>
           <button type="button" class="btn btn-sm btn-circle btn-ghost" data-action="modal#close">
