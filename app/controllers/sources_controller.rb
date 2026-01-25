@@ -3,8 +3,8 @@
 class SourcesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
-  before_action :set_source, only: [ :show, :edit, :update, :destroy ]
-  before_action :load_form_data, only: [ :new, :edit, :create, :update, :new_modal, :create_modal ]
+  before_action :set_source, only: [ :show, :edit, :update, :destroy, :edit_modal, :update_modal ]
+  before_action :load_form_data, only: [ :new, :edit, :create, :update, :new_modal, :create_modal, :edit_modal, :update_modal ]
 
   def index
     @pagy, @sources = pagy(:offset, current_organization.sources.includes(:source_type).order(created_at: :desc))
@@ -60,6 +60,20 @@ class SourcesController < ApplicationController
       end
     else
       render :new_modal, layout: false, status: :unprocessable_entity
+    end
+  end
+
+  def edit_modal
+    render layout: false
+  end
+
+  def update_modal
+    if @source.update(source_params)
+      respond_to do |format|
+        format.turbo_stream
+      end
+    else
+      render :edit_modal, layout: false, status: :unprocessable_entity
     end
   end
 

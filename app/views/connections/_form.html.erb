@@ -1,4 +1,4 @@
-<%= form_with model: connection, url: connection.persisted? ? connection_path(connection) : connections_path, class: "space-y-4", data: { controller: "connection-form", connection_form_source_edit_path_value: edit_source_path("__ID__"), connection_form_destination_edit_path_value: edit_destination_path("__ID__") } do |f| %>
+<%= form_with model: connection, url: connection.persisted? ? connection_path(connection) : connections_path, class: "space-y-4", data: { controller: "connection-form", connection_form_source_edit_path_value: edit_modal_source_path("__ID__"), connection_form_destination_edit_path_value: edit_modal_destination_path("__ID__") } do |f| %>
   <% if connection.errors.any? %>
     <div class="alert alert-error">
       <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">

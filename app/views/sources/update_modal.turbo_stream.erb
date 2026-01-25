@@ -1,0 +1,7 @@
+<%# Update the source selector with the updated source selected %>
+<%= turbo_stream.replace "source_selector" do %>
+  <%= render "connections/source_selector", sources: current_organization.sources.active, selected_id: @source.id %>
+<% end %>
+
+<%# Clear the modal frame (closes the dialog) %>
+<%= turbo_stream.update "modal", "" %>

@@ -1,7 +1,11 @@
 <% verification_types_map = @source_types.each_with_object({}) { |st, h| h[st.id.to_s] = st.verification_type_id } %>
 <% verification_type_names = @verification_types.each_with_object({}) { |vt, h| h[vt.id.to_s] = vt.name } %>
 <% modal ||= false %>
-<% form_url = modal ? create_modal_sources_path : (source.persisted? ? source_path(source) : sources_path) %>
+<% form_url = if modal
+  source.persisted? ? update_modal_source_path(source) : create_modal_sources_path
+else
+  source.persisted? ? source_path(source) : sources_path
+end %>
 <%= form_with model: source, url: form_url, class: "space-y-4", data: { controller: "source-form", source_form_verification_types_value: verification_types_map.to_json, source_form_verification_type_names_value: verification_type_names.to_json } do |f| %>
   <% if source.errors.any? %>
     <div class="alert alert-error">

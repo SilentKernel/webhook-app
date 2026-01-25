@@ -72,11 +72,19 @@ Rails.application.routes.draw do
         get :new_modal
         post :create_modal
       end
+      member do
+        get :edit_modal
+        patch :update_modal
+      end
     end
     resources :destinations do
       collection do
         get :new_modal
         post :create_modal
+      end
+      member do
+        get :edit_modal
+        patch :update_modal
       end
     end
     resources :connections

@@ -1,5 +1,9 @@
 <% modal ||= false %>
-<% form_url = modal ? create_modal_destinations_path : (destination.persisted? ? destination_path(destination) : destinations_path) %>
+<% form_url = if modal
+  destination.persisted? ? update_modal_destination_path(destination) : create_modal_destinations_path
+else
+  destination.persisted? ? destination_path(destination) : destinations_path
+end %>
 <%= form_with model: destination, url: form_url, class: "space-y-4" do |f| %>
   <% if destination.errors.any? %>
     <div class="alert alert-error">
