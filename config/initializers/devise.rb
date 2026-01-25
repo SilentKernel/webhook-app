@@ -24,7 +24,7 @@ Devise.setup do |config|
   # Configure the e-mail address which will be shown in Devise::Mailer,
   # note that it will be overwritten if you use your own mailer class
   # with default "from" parameter.
-  config.mailer_sender = Rails.application.credentials.dig(:mailer, :from) || 'noreply@notif.hookstack.io'
+  config.mailer_sender = "HookStack.io <#{Rails.application.credentials.dig(:mailer, :from) || 'noreply@notif.hookstack.io'}>"
 
   # Configure the class responsible to send e-mails.
   # config.mailer = 'Devise::Mailer'
