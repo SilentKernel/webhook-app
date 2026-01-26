@@ -39,3 +39,12 @@ connection_with_rules:
   rules: <%= [{ "type" => "filter", "config" => { "event_types" => ["payment.completed", "checkout.session.completed"] } }, { "type" => "delay", "config" => { "seconds" => 30 } }].to_json %>
   status: 1
   priority: 3
+
+# Same source/destination as connection_with_rules but with different rules (only delay, no filter)
+paused_source_to_disabled_delayed:
+  source: paused_source
+  destination: disabled_destination
+  name: Paused Source Delayed Only
+  rules: <%= [{ "type" => "delay", "config" => { "seconds" => 120 } }].to_json %>
+  status: 1
+  priority: 10

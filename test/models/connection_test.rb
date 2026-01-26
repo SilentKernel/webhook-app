@@ -27,14 +27,42 @@ class ConnectionTest < ActiveSupport::TestCase
     assert_includes connection.errors[:destination], "must exist"
   end
 
-  test "source and destination must be unique pair" do
+  test "same source destination and rules combination is invalid" do
     existing = connections(:stripe_to_production)
     connection = Connection.new(
       source: existing.source,
-      destination: existing.destination
+      destination: existing.destination,
+      rules: existing.rules
     )
     assert_not connection.valid?
-    assert connection.errors[:source_id].any?
+    assert connection.errors[:base].any?
+    assert_includes connection.errors[:base], "a connection with the same source, destination, and rules already exists"
+  end
+
+  test "same source destination with different rules is valid" do
+    existing = connections(:stripe_to_production)
+    connection = Connection.new(
+      source: existing.source,
+      destination: existing.destination,
+      rules: [{ "type" => "filter", "config" => { "event_types" => ["checkout.session.completed"] } }]
+    )
+    assert connection.valid?
+  end
+
+  test "same source destination with different delay rules is valid" do
+    existing = connections(:stripe_to_production)
+    connection = Connection.new(
+      source: existing.source,
+      destination: existing.destination,
+      rules: [{ "type" => "delay", "config" => { "seconds" => 60 } }]
+    )
+    assert connection.valid?
+  end
+
+  test "updating connection with same rules is valid" do
+    connection = connections(:stripe_to_production)
+    connection.name = "Updated Name"
+    assert connection.valid?
   end
 
   test "same source can connect to different destinations" do
