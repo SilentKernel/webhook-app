@@ -80,6 +80,16 @@ end %>
     </label>
   </div>
 
+  <div class="form-control w-full">
+    <%= f.label :response_status_code, class: "label" do %>
+      <span class="label-text">Success Response Code</span>
+    <% end %>
+    <%= f.number_field :response_status_code, class: "input input-bordered w-full", placeholder: "202", min: 200, max: 299 %>
+    <label class="label">
+      <span class="label-text-alt text-base-content/60">HTTP status code returned on successful webhook reception (default: 202 Accepted)</span>
+    </label>
+  </div>
+
   <div class="flex gap-4 mt-6">
     <%= f.submit source.persisted? ? "Update Source" : "Create Source", class: "btn btn-primary flex-1" %>
     <% if modal %>

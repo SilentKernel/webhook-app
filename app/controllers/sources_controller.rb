@@ -89,6 +89,6 @@ class SourcesController < ApplicationController
   end
 
   def source_params
-    params.require(:source).permit(:name, :source_type_id, :verification_type_id, :verification_secret, :status)
+    params.require(:source).permit(:name, :source_type_id, :verification_type_id, :verification_secret, :status, :response_status_code)
   end
 end

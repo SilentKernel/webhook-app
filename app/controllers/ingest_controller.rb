@@ -51,11 +51,11 @@ class IngestController < ActionController::Base
     # Queue for processing (only for successfully received events)
     ProcessWebhookJob.perform_later(@event.id)
 
-    # Return success (202 Accepted - we've queued it)
+    # Return success with configured status code (default: 202 Accepted)
     render json: {
       event_id: @event.uid,
       message: "Webhook received by HookStack"
-    }, status: :accepted
+    }, status: @source.success_status_code
   end
 
   private

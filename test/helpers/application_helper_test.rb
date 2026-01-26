@@ -180,4 +180,51 @@ class ApplicationHelperTest < ActionView::TestCase
     result = next_retry_display(delivery)
     assert_equal "Pending", result
   end
+
+  # cleaned_response_body tests
+  test "cleaned_response_body strips HTML tags correctly" do
+    html = "<html><body><h1>Error</h1> <p>Something went wrong</p></body></html>"
+    result = cleaned_response_body(html)
+    assert_equal "Error Something went wrong", result
+  end
+
+  test "cleaned_response_body normalizes whitespace" do
+    html = "<div>Hello   \n\n   World</div>"
+    result = cleaned_response_body(html)
+    assert_equal "Hello World", result
+  end
+
+  test "cleaned_response_body returns nil for blank input" do
+    assert_nil cleaned_response_body(nil)
+    assert_nil cleaned_response_body("")
+    assert_nil cleaned_response_body("   ")
+  end
+
+  test "cleaned_response_body returns nil when result is only whitespace" do
+    html = "<div>   </div>"
+    result = cleaned_response_body(html)
+    assert_nil result
+  end
+
+  # html_response? tests
+  test "html_response? detects HTML content" do
+    assert html_response?("<html><body>Hello</body></html>")
+    assert html_response?("<div>Content</div>")
+    assert html_response?("Some text with <tags> in it")
+  end
+
+  test "html_response? returns false for JSON content" do
+    assert_not html_response?('{"error": "something went wrong"}')
+    assert_not html_response?('[1, 2, 3]')
+  end
+
+  test "html_response? returns false for plain text" do
+    assert_not html_response?("Plain text response")
+    assert_not html_response?("Error: connection refused")
+  end
+
+  test "html_response? returns false for blank input" do
+    assert_not html_response?(nil)
+    assert_not html_response?("")
+  end
 end

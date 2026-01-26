@@ -370,4 +370,53 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     event = Event.last
     assert event.received?
   end
+
+  # Custom response status code tests
+  test "returns 202 by default when response_status_code is nil" do
+    @source.update!(response_status_code: nil)
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :accepted
+    assert_equal 202, response.status
+  end
+
+  test "returns configured response_status_code when set to 200" do
+    @source.update!(response_status_code: 200)
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :ok
+    assert_equal 200, response.status
+  end
+
+  test "returns configured response_status_code when set to 201" do
+    @source.update!(response_status_code: 201)
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :created
+    assert_equal 201, response.status
+  end
+
+  test "returns configured response_status_code when set to 204" do
+    @source.update!(response_status_code: 204)
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: { "Content-Type" => "application/json" }
+
+    assert_response :no_content
+    assert_equal 204, response.status
+  end
 end

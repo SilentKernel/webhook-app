@@ -166,4 +166,80 @@ class SourceTest < ActiveSupport::TestCase
       source.destroy
     end
   end
+
+  # response_status_code tests
+  test "response_status_code allows nil" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: nil
+    )
+    assert source.valid?
+  end
+
+  test "response_status_code allows values in 200-299 range" do
+    [ 200, 201, 202, 204, 299 ].each do |code|
+      source = Source.new(
+        organization: organizations(:acme),
+        name: "My Source",
+        verification_type: verification_types(:none),
+        response_status_code: code
+      )
+      assert source.valid?, "Expected #{code} to be valid"
+    end
+  end
+
+  test "response_status_code rejects values below 200" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: 199
+    )
+    assert_not source.valid?
+    assert_includes source.errors[:response_status_code], "must be greater than or equal to 200"
+  end
+
+  test "response_status_code rejects values at 300 or above" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: 300
+    )
+    assert_not source.valid?
+    assert_includes source.errors[:response_status_code], "must be less than 300"
+  end
+
+  test "response_status_code rejects non-integer values" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: 200.5
+    )
+    assert_not source.valid?
+    assert_includes source.errors[:response_status_code], "must be an integer"
+  end
+
+  test "success_status_code returns configured value when set" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: 200
+    )
+    assert_equal 200, source.success_status_code
+  end
+
+  test "success_status_code returns 202 when response_status_code is nil" do
+    source = Source.new(
+      organization: organizations(:acme),
+      name: "My Source",
+      verification_type: verification_types(:none),
+      response_status_code: nil
+    )
+    assert_equal 202, source.success_status_code
+  end
 end

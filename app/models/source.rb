@@ -9,6 +9,12 @@ class Source < ApplicationRecord
 
   validates :name, presence: true
   validates :ingest_token, presence: true, uniqueness: true
+  validates :response_status_code, numericality: {
+    only_integer: true,
+    greater_than_or_equal_to: 200,
+    less_than: 300,
+    allow_nil: true
+  }
 
   before_validation :generate_ingest_token, on: :create
   before_validation :set_verification_from_source_type, on: :create
@@ -20,6 +26,11 @@ class Source < ApplicationRecord
   # Used by SignatureVerifier to determine which verification method to use
   def verification_type_slug
     verification_type&.slug || "none"
+  end
+
+  # Returns the configured status code or 202 (Accepted) as default
+  def success_status_code
+    response_status_code || 202
   end
 
   private

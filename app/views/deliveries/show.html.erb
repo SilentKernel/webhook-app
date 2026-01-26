@@ -185,6 +185,12 @@
                             attempt.response_body.truncate(2000)
                           end %></pre>
                         </div>
+                        <% if html_response?(attempt.response_body) %>
+                          <div class="mt-2">
+                            <strong>Cleaned Response:</strong>
+                            <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= cleaned_response_body(attempt.response_body).truncate(2000) %></pre>
+                          </div>
+                        <% end %>
                       <% end %>
                     </div>
 
