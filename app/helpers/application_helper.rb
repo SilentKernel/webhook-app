@@ -126,8 +126,9 @@ module ApplicationHelper
   # Strip HTML tags and normalize whitespace for readable response display
   def cleaned_response_body(body)
     return nil if body.blank?
-    cleaned = strip_tags(body)
-    cleaned.gsub(/\s+/, " ").strip.presence
+    doc = Nokogiri::HTML(body)
+    doc.css("style, script").remove
+    doc.text.gsub(/\s+/, " ").strip.presence
   end
 
   # Detect if response contains HTML/XML markup

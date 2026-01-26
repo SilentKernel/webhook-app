@@ -206,6 +206,26 @@ class ApplicationHelperTest < ActionView::TestCase
     assert_nil result
   end
 
+  test "cleaned_response_body excludes CSS from style tags" do
+    html = "<style>body{font-family:Arial}</style><h1>Error Page</h1>"
+    result = cleaned_response_body(html)
+    assert_equal "Error Page", result
+  end
+
+  test "cleaned_response_body excludes JavaScript from script tags" do
+    html = "<script>alert('hello');</script><p>Content here</p>"
+    result = cleaned_response_body(html)
+    assert_equal "Content here", result
+  end
+
+  test "cleaned_response_body excludes base64 image data" do
+    html = '<img src="data:image/png;base64,iVBORw0KGgoAAAANS..." alt="logo"><p>Welcome</p>'
+    result = cleaned_response_body(html)
+    assert_equal "Welcome", result
+    assert_no_match(/base64/, result.to_s)
+    assert_no_match(/iVBORw/, result.to_s)
+  end
+
   # html_response? tests
   test "html_response? detects HTML content" do
     assert html_response?("<html><body>Hello</body></html>")
