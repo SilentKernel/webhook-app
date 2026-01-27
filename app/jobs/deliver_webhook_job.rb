@@ -126,7 +126,6 @@ class DeliverWebhookJob < ApplicationJob
     # Base platform headers (override forwarded headers)
     headers.merge!(
       "Content-Type" => content_type || "application/json",
-      "User-Agent" => "WebhookPlatform/1.0",
       "X-Webhook-Event-Id" => event.uid,
       "X-Webhook-Event-Type" => event.event_type.to_s,
       "X-Webhook-Timestamp" => Time.current.iso8601

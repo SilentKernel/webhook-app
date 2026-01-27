@@ -169,8 +169,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     stub_request(:post, @destination.url)
       .with(
         headers: {
-          "Content-Type" => "application/json",
-          "User-Agent" => "WebhookPlatform/1.0"
+          "Content-Type" => "application/json"
         }
       )
       .to_return(status: 200)
@@ -480,7 +479,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
   test "platform headers override forwarded headers" do
     event = @delivery.event
     event.update!(
-      headers: { "User-Agent" => "OriginalAgent/1.0", "Stripe-Signature" => "sig_123" },
+      headers: { "Stripe-Signature" => "sig_123" },
       uid: "test-uid-456"
     )
     @delivery.connection.update!(forward_all_headers: true)
@@ -493,9 +492,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     @delivery.reload
     attempt = @delivery.delivery_attempts.last
 
-    # Platform header should override the forwarded one
-    assert_equal "WebhookPlatform/1.0", attempt.request_headers["User-Agent"]
-    # But other forwarded headers should still be present
+    # Forwarded headers should still be present
     assert_equal "sig_123", attempt.request_headers["Stripe-Signature"]
   end
 
