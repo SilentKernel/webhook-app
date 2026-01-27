@@ -37,6 +37,12 @@
                 </td>
               </tr>
               <tr>
+                <th>Event Type</th>
+                <td>
+                  <span class="badge badge-outline"><%= @delivery.event.event_type || "—" %></span>
+                </td>
+              </tr>
+              <tr>
                 <th>Connection</th>
                 <td>
                   <%= link_to @delivery.connection.source.name, source_path(@delivery.connection.source), class: "link link-hover" %>

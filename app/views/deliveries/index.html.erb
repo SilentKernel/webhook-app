@@ -39,10 +39,17 @@
         </div>
 
         <div class="form-control">
+          <label class="label">
+            <span class="label-text">Event Type</span>
+          </label>
+          <input type="text" name="event_type" value="<%= params[:event_type] %>" placeholder="e.g., payment.completed" class="input input-bordered w-full max-w-xs">
+        </div>
+
+        <div class="form-control">
           <button type="submit" class="btn btn-primary">Apply</button>
         </div>
 
-        <% if params[:status].present? || params[:destination_id].present? %>
+        <% if params[:status].present? || params[:destination_id].present? || params[:event_type].present? %>
           <div class="form-control">
             <%= link_to "Clear", deliveries_path, class: "btn btn-ghost" %>
           </div>
@@ -60,7 +67,9 @@
             <thead>
               <tr>
                 <th>Event</th>
+                <th>Source</th>
                 <th>Destination</th>
+                <th>Event Type</th>
                 <th>Status</th>
                 <th>Attempts</th>
                 <th>Created</th>
@@ -74,7 +83,13 @@
                     <%= link_to delivery.event.uid.truncate(12), event_path(delivery.event), class: "link link-hover font-mono text-sm" %>
                   </td>
                   <td>
+                    <%= link_to delivery.event.source.name, source_path(delivery.event.source), class: "link link-hover" %>
+                  </td>
+                  <td>
                     <%= link_to delivery.destination.name, destination_path(delivery.destination), class: "link link-hover" %>
+                  </td>
+                  <td>
+                    <span class="badge badge-outline"><%= delivery.event.event_type || "—" %></span>
                   </td>
                   <td><%= delivery_status_badge(delivery.status) %></td>
                   <td><%= delivery.attempt_count %>/<%= delivery.max_attempts %></td>
@@ -103,7 +118,7 @@
           </svg>
           <h3 class="mt-4 text-lg font-medium">No deliveries yet</h3>
           <p class="mt-2 text-base-content/60">Deliveries will appear here when events are forwarded to destinations.</p>
-          <% if params[:status].present? || params[:destination_id].present? %>
+          <% if params[:status].present? || params[:destination_id].present? || params[:event_type].present? %>
             <div class="mt-6">
               <%= link_to "Clear Filters", deliveries_path, class: "btn btn-outline" %>
             </div>

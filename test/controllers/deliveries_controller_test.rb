@@ -42,10 +42,36 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
     assert_response :success
   end
 
+  test "index filters by event_type" do
+    get deliveries_url(locale: :en, event_type: "payment.completed")
+    assert_response :success
+    assert_select "span.badge", text: "payment.completed"
+  end
+
+  test "index displays event type column" do
+    get deliveries_url(locale: :en)
+    assert_response :success
+    assert_select "th", text: "Event Type"
+    assert_select "span.badge.badge-outline", minimum: 1
+  end
+
+  test "index displays source column" do
+    get deliveries_url(locale: :en)
+    assert_response :success
+    assert_select "th", text: "Source"
+  end
+
   # Show tests
   test "should show delivery" do
     get delivery_url(@pending_delivery, locale: :en)
     assert_response :success
+  end
+
+  test "show displays event type" do
+    get delivery_url(@pending_delivery, locale: :en)
+    assert_response :success
+    assert_select "th", text: "Event Type"
+    assert_select "span.badge.badge-outline", minimum: 1
   end
 
   test "should not show delivery from another organization" do

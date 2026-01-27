@@ -9,12 +9,13 @@ class DeliveriesController < ApplicationController
     @destinations = current_organization.destinations
     deliveries = Delivery.joins(event: :source)
                          .where(sources: { organization_id: current_organization.id })
-                         .includes(:event, :destination, :connection)
+                         .includes({ event: :source }, :destination, :connection)
                          .order(created_at: :desc)
 
     deliveries = deliveries.where(status: params[:status]) if params[:status].present?
     deliveries = deliveries.where(destination_id: params[:destination_id]) if params[:destination_id].present?
     deliveries = deliveries.where(event_id: params[:event_id]) if params[:event_id].present?
+    deliveries = deliveries.where(events: { event_type: params[:event_type] }) if params[:event_type].present?
 
     @pagy, @deliveries = pagy(:offset, deliveries)
   end
