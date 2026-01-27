@@ -371,6 +371,35 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
     assert event.received?
   end
 
+  test "strips reverse proxy headers from stored event" do
+    payload = { type: "test.event" }
+
+    post ingest_url(token: @source.ingest_token),
+         params: payload.to_json,
+         headers: {
+           "Content-Type" => "application/json",
+           "X-Forwarded-For" => "1.2.3.4",
+           "X-Forwarded-Proto" => "https",
+           "X-Forwarded-Port" => "443",
+           "X-Forwarded-Host" => "example.com",
+           "X-Forwarded-Scheme" => "https",
+           "X-Forwarded-Ssl" => "on",
+           "Forwarded" => "for=1.2.3.4;proto=https",
+           "Via" => "1.1 vegur",
+           "X-Custom-Header" => "keep-me"
+         }
+
+    assert_response :accepted
+    event = Event.last
+    stored = event.headers
+
+    IngestController::STRIPPED_HEADERS.each do |header|
+      assert_not_includes stored.keys, header, "#{header} should be stripped"
+    end
+
+    assert_equal "keep-me", stored["X-Custom-Header"]
+  end
+
   # Custom response status code tests
   test "returns 202 by default when response_status_code is nil" do
     @source.update!(response_status_code: nil)

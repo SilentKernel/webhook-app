@@ -9,6 +9,17 @@ class IngestController < ActionController::Base
 
   MAX_PAYLOAD_SIZE = 1.megabyte # 1,048,576 bytes
 
+  STRIPPED_HEADERS = %w[
+    X-Forwarded-For
+    X-Forwarded-Proto
+    X-Forwarded-Port
+    X-Forwarded-Host
+    X-Forwarded-Scheme
+    X-Forwarded-Ssl
+    Forwarded
+    Via
+  ].freeze
+
   def receive
     # Find source by ingest token first
     @source = Source.find_by(ingest_token: params[:token])
@@ -157,12 +168,13 @@ class IngestController < ActionController::Base
   end
 
   def request_headers
-    # Extract relevant headers (skip internal Rails headers)
+    # Extract relevant headers (skip internal Rails headers and reverse proxy headers)
     headers = {}
     request.headers.each do |key, value|
       next unless key.start_with?("HTTP_") || %w[CONTENT_TYPE CONTENT_LENGTH].include?(key)
       # Convert HTTP_X_CUSTOM_HEADER to X-Custom-Header
       header_name = key.sub(/^HTTP_/, "").split("_").map(&:capitalize).join("-")
+      next if STRIPPED_HEADERS.include?(header_name)
       headers[header_name] = value
     end
     headers
