@@ -22,7 +22,7 @@ class ProcessWebhookJobTest < ActiveJob::TestCase
     assert_equal @connection, delivery.connection
     assert_equal @connection.destination, delivery.destination
     assert_equal "queued", delivery.status
-    assert_equal 5, delivery.max_attempts
+    assert_equal Delivery::DEFAULT_MAX_ATTEMPTS, delivery.max_attempts
   end
 
   test "queues DeliverWebhookJob for each delivery" do

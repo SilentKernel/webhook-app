@@ -74,7 +74,7 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
 
     new_delivery = @event.deliveries.order(created_at: :desc).first
     assert new_delivery.queued?
-    assert_equal 5, new_delivery.max_attempts
+    assert_equal Delivery::DEFAULT_MAX_ATTEMPTS, new_delivery.max_attempts
   end
 
   test "replay shows alert when no active connections" do

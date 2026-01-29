@@ -6,7 +6,7 @@ pending_delivery:
   destination: production_api
   status: 0
   attempt_count: 0
-  max_attempts: 5
+  max_attempts: 18
   next_attempt_at: <%= Time.current %>
   completed_at:
 
@@ -16,7 +16,7 @@ successful_delivery:
   destination: staging_api
   status: 3
   attempt_count: 1
-  max_attempts: 5
+  max_attempts: 18
   next_attempt_at:
   completed_at: <%= 1.hour.ago %>
 
@@ -25,8 +25,8 @@ failed_delivery:
   connection: stripe_to_production
   destination: production_api
   status: 4
-  attempt_count: 5
-  max_attempts: 5
+  attempt_count: 18
+  max_attempts: 18
   next_attempt_at:
   completed_at: <%= 30.minutes.ago %>
 
@@ -36,7 +36,7 @@ retrying_delivery:
   destination: production_api
   status: 4
   attempt_count: 2
-  max_attempts: 5
+  max_attempts: 18
   next_attempt_at: <%= 5.minutes.from_now %>
   completed_at:
 
@@ -46,7 +46,7 @@ queued_delivery:
   destination: staging_api
   status: 1
   attempt_count: 0
-  max_attempts: 5
+  max_attempts: 18
   next_attempt_at:
   completed_at:
 
@@ -56,6 +56,6 @@ delivering_delivery:
   destination: staging_api
   status: 2
   attempt_count: 1
-  max_attempts: 5
+  max_attempts: 18
   next_attempt_at:
   completed_at:

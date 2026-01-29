@@ -173,7 +173,7 @@ class PaginationTest < ActionDispatch::IntegrationTest
         connection: connection,
         destination: destination,
         status: :pending,
-        max_attempts: 5
+        max_attempts: 18
       )
     end
 
@@ -194,7 +194,7 @@ class PaginationTest < ActionDispatch::IntegrationTest
         connection: connection,
         destination: destination,
         status: :success,
-        max_attempts: 5
+        max_attempts: 18
       )
     end
 

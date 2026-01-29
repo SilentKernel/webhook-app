@@ -128,7 +128,7 @@ class DeliveryTest < ActiveSupport::TestCase
       destination: destinations(:staging_api),
       status: :failed,
       attempt_count: 2,
-      max_attempts: 5,
+      max_attempts: 18,
       next_attempt_at: 1.minute.ago
     )
 
@@ -169,17 +169,17 @@ class DeliveryTest < ActiveSupport::TestCase
   end
 
   test "can_retry? returns true when under max attempts" do
-    delivery = Delivery.new(attempt_count: 2, max_attempts: 5)
+    delivery = Delivery.new(attempt_count: 2, max_attempts: 18)
     assert delivery.can_retry?
   end
 
   test "can_retry? returns false when at max attempts" do
-    delivery = Delivery.new(attempt_count: 5, max_attempts: 5)
+    delivery = Delivery.new(attempt_count: 18, max_attempts: 18)
     assert_not delivery.can_retry?
   end
 
   test "can_retry? returns false when over max attempts" do
-    delivery = Delivery.new(attempt_count: 6, max_attempts: 5)
+    delivery = Delivery.new(attempt_count: 19, max_attempts: 18)
     assert_not delivery.can_retry?
   end
 
@@ -240,7 +240,7 @@ class DeliveryTest < ActiveSupport::TestCase
       destination: destinations(:staging_api),
       status: :pending,
       attempt_count: 1,
-      max_attempts: 5
+      max_attempts: 18
     )
 
     freeze_time do
@@ -256,8 +256,8 @@ class DeliveryTest < ActiveSupport::TestCase
       connection: connections(:paused_connection),
       destination: destinations(:staging_api),
       status: :delivering,
-      attempt_count: 4,
-      max_attempts: 5
+      attempt_count: 17,
+      max_attempts: 18
     )
 
     freeze_time do

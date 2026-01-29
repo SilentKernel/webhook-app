@@ -83,7 +83,7 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
       connection: other_org_connection,
       destination: other_org_destination,
       status: :pending,
-      max_attempts: 5
+      max_attempts: 18
     )
 
     get delivery_url(other_org_delivery, locale: :en)
@@ -134,7 +134,7 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
       connection: other_org_connection,
       destination: other_org_destination,
       status: :failed,
-      max_attempts: 5
+      max_attempts: 18
     )
 
     post retry_delivery_url(other_org_delivery, locale: :en)

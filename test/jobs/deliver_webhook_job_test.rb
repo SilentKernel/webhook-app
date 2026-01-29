@@ -114,7 +114,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
   end
 
   test "does not schedule retry when max attempts reached" do
-    @delivery.update!(attempt_count: 4, max_attempts: 5)
+    @delivery.update!(attempt_count: 17, max_attempts: 18)
 
     stub_request(:post, @destination.url)
       .to_return(status: 500)
@@ -128,7 +128,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
   end
 
   test "enqueues failure notification job on permanent failure" do
-    @delivery.update!(attempt_count: 4, max_attempts: 5)
+    @delivery.update!(attempt_count: 17, max_attempts: 18)
 
     stub_request(:post, @destination.url)
       .to_return(status: 500)
@@ -139,7 +139,7 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
   end
 
   test "enqueues failure notification job on every failure including retries" do
-    @delivery.update!(attempt_count: 0, max_attempts: 5)
+    @delivery.update!(attempt_count: 0, max_attempts: 18)
 
     stub_request(:post, @destination.url)
       .to_return(status: 500)

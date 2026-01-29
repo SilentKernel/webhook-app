@@ -94,7 +94,7 @@ class ApplicationHelperTest < ActionView::TestCase
       connection: connections(:stripe_to_production),
       destination: destinations(:production_api),
       status: :success,
-      max_attempts: 5
+      max_attempts: 18
     )
     event.reload
 
@@ -110,7 +110,7 @@ class ApplicationHelperTest < ActionView::TestCase
       connection: connections(:stripe_to_production),
       destination: destinations(:production_api),
       status: :failed,
-      max_attempts: 5,
+      max_attempts: 18,
       attempt_count: 5
     )
     event.reload
@@ -127,13 +127,13 @@ class ApplicationHelperTest < ActionView::TestCase
       connection: connections(:stripe_to_production),
       destination: destinations(:production_api),
       status: :success,
-      max_attempts: 5
+      max_attempts: 18
     )
     event.deliveries.create!(
       connection: connections(:github_to_staging),
       destination: destinations(:staging_api),
       status: :failed,
-      max_attempts: 5,
+      max_attempts: 18,
       attempt_count: 5
     )
     event.reload

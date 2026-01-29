@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 class Delivery < ApplicationRecord
+  DEFAULT_MAX_ATTEMPTS = 18
   MAX_BACKOFF_MINUTES = 1440 # 24 hours
 
   belongs_to :event

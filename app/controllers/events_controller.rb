@@ -43,7 +43,7 @@ class EventsController < ApplicationController
         connection: connection,
         destination: connection.destination,
         status: :queued,
-        max_attempts: 5
+        max_attempts: Delivery::DEFAULT_MAX_ATTEMPTS
       )
       DeliverWebhookJob.perform_later(delivery.id)
     end
