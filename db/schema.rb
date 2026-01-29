@@ -10,9 +10,45 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_183240) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_29_225603) do
   # These are extensions that must be enabled in order to support this database
+  enable_extension "autoinc"
+  enable_extension "btree_gin"
+  enable_extension "btree_gist"
+  enable_extension "citext"
+  enable_extension "cube"
+  enable_extension "dblink"
+  enable_extension "dict_int"
+  enable_extension "dict_xsyn"
+  enable_extension "earthdistance"
+  enable_extension "file_fdw"
+  enable_extension "fuzzystrmatch"
+  enable_extension "hstore"
+  enable_extension "insert_username"
+  enable_extension "intagg"
+  enable_extension "intarray"
+  enable_extension "isn"
+  enable_extension "lo"
+  enable_extension "ltree"
+  enable_extension "moddatetime"
+  enable_extension "pageinspect"
+  enable_extension "pg_buffercache"
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pg_freespacemap"
+  enable_extension "pg_stat_statements"
+  enable_extension "pg_trgm"
+  enable_extension "pgcrypto"
+  enable_extension "pgrowlocks"
+  enable_extension "pgstattuple"
+  enable_extension "postgres_fdw"
+  enable_extension "refint"
+  enable_extension "seg"
+  enable_extension "sslinfo"
+  enable_extension "tablefunc"
+  enable_extension "tcn"
+  enable_extension "unaccent"
+  enable_extension "uuid-ossp"
+  enable_extension "xml2"
 
   create_table "connections", force: :cascade do |t|
     t.datetime "created_at", null: false
@@ -106,9 +142,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_183240) do
     t.datetime "created_at", null: false
     t.string "event_type"
     t.jsonb "headers", default: {}
-    t.jsonb "payload", default: {}
     t.jsonb "query_params", default: {}
-    t.binary "raw_body"
+    t.text "raw_body"
     t.datetime "received_at", null: false
     t.bigint "source_id", null: false
     t.string "source_ip"

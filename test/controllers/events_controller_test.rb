@@ -83,7 +83,7 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
       source: source_without_connections,
       uid: "test_uid_no_connections",
       event_type: "test.event",
-      payload: {},
+      raw_body: '{"test": true}',
       headers: {},
       query_params: {},
       received_at: Time.current

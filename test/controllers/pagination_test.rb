@@ -120,7 +120,7 @@ class PaginationTest < ActionDispatch::IntegrationTest
         source: source,
         uid: "test_pagination_event_#{i}_#{SecureRandom.hex(4)}",
         event_type: "test.event",
-        payload: { test: i },
+        raw_body: { test: i }.to_json,
         headers: { "content-type" => "application/json" },
         query_params: {},
         received_at: Time.current
@@ -141,7 +141,7 @@ class PaginationTest < ActionDispatch::IntegrationTest
         source: source,
         uid: "filter_pagination_event_#{i}_#{SecureRandom.hex(4)}",
         event_type: "payment.completed",
-        payload: { test: i },
+        raw_body: { test: i }.to_json,
         headers: {},
         query_params: {},
         received_at: Time.current

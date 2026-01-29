@@ -1,6 +1,9 @@
 # frozen_string_literal: true
 
 class DeliveryAttempt < ApplicationRecord
+  encrypts :request_body
+  encrypts :response_body
+
   belongs_to :delivery
   has_one :event, through: :delivery
   has_one :destination, through: :delivery

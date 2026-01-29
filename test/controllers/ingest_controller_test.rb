@@ -143,7 +143,6 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     event = Event.last
-    assert_equal({ "_content" => "raw body content" }, event.payload)
     assert_equal "raw body content", event.raw_body
     assert_equal 16, event.body_size
     assert_not event.body_is_binary
@@ -159,9 +158,8 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     event = Event.last
-    assert_equal "xml", event.payload["_format"]
-    assert_equal xml_body.bytesize, event.payload["_size"]
     assert_equal xml_body, event.raw_body
+    assert_equal xml_body.bytesize, event.body_size
     assert event.xml?
   end
 
@@ -174,10 +172,8 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     event = Event.last
-    assert_equal "test", event.payload["event"]
-    assert_equal "123", event.payload["value"]
-    assert_equal({ "key" => "value" }, event.payload["nested"])
     assert_equal form_body, event.raw_body
+    assert_equal form_body.bytesize, event.body_size
     assert event.form_urlencoded?
   end
 
@@ -190,9 +186,8 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
 
     assert_response :accepted
     event = Event.last
-    assert_equal "binary", event.payload["_format"]
-    assert_equal 5, event.payload["_size"]
     assert_equal binary_body.bytes, event.raw_body.bytes
+    assert_equal 5, event.body_size
     assert event.body_is_binary
     assert event.binary?
   end

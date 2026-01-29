@@ -258,20 +258,6 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_requested :put, @destination.url
   end
 
-  test "sends event payload as JSON body" do
-    event = @delivery.event
-    # Clear raw_body to test legacy JSON payload conversion
-    event.update!(payload: { "id" => "test_123", "amount" => 1000 }, raw_body: nil)
-
-    stub_request(:post, @destination.url)
-      .with(body: '{"id":"test_123","amount":1000}')
-      .to_return(status: 200)
-
-    DeliverWebhookJob.perform_now(@delivery.id)
-
-    assert_requested :post, @destination.url
-  end
-
   test "truncates long response body" do
     long_body = "x" * 70_000
 
@@ -334,28 +320,6 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
       .with(
         body: form_body,
         headers: { "Content-Type" => "application/x-www-form-urlencoded" }
-      )
-      .to_return(status: 200)
-
-    DeliverWebhookJob.perform_now(@delivery.id)
-
-    assert_requested :post, @destination.url
-  end
-
-  test "falls back to JSON for legacy events without raw_body" do
-    event = @delivery.event
-    event.update!(
-      payload: { "id" => "legacy_123", "type" => "test" },
-      raw_body: nil,
-      content_type: "application/json"
-    )
-
-    expected_body = '{"id":"legacy_123","type":"test"}'
-
-    stub_request(:post, @destination.url)
-      .with(
-        body: expected_body,
-        headers: { "Content-Type" => "application/json" }
       )
       .to_return(status: 200)
 

@@ -4,10 +4,6 @@ stripe_payment_event:
   source: stripe_production
   uid: evt_stripe_payment_123
   event_type: payment.completed
-  payload:
-    id: pay_123
-    amount: 1000
-    currency: usd
   raw_body: '{"id":"pay_123","amount":1000,"currency":"usd"}'
   body_is_binary: false
   body_size: 45
@@ -23,10 +19,6 @@ github_push_event:
   source: github_webhook
   uid: evt_github_push_456
   event_type: push
-  payload:
-    ref: refs/heads/main
-    repository:
-      full_name: acme/app
   raw_body: '{"ref":"refs/heads/main","repository":{"full_name":"acme/app"}}'
   body_is_binary: false
   body_size: 63
@@ -42,8 +34,6 @@ old_event:
   source: stripe_production
   uid: evt_old_event_789
   event_type: customer.created
-  payload:
-    id: cus_123
   raw_body: '{"id":"cus_123"}'
   body_is_binary: false
   body_size: 16
@@ -58,8 +48,6 @@ other_org_event:
   source: other_org_source
   uid: evt_other_org_abc
   event_type: payment.completed
-  payload:
-    id: pay_other
   raw_body: '{"id":"pay_other"}'
   body_is_binary: false
   body_size: 18

@@ -1,4 +1,6 @@
 class Source < ApplicationRecord
+  encrypts :verification_secret
+
   belongs_to :organization
   belongs_to :source_type, optional: true
   belongs_to :verification_type

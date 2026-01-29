@@ -47,7 +47,7 @@ class DeliverWebhookJob < ApplicationJob
         status: response.success? ? :success : :failed,
         request_url: destination.url,
         request_method: destination.http_method,
-        request_headers: build_request_headers(event, destination, connection),
+        request_headers: sanitize_headers_for_storage(build_request_headers(event, destination, connection)),
         request_body: truncate_body(request_body),
         response_status: response.status,
         response_headers: response.headers.to_h,
@@ -61,7 +61,7 @@ class DeliverWebhookJob < ApplicationJob
         status: :failed,
         request_url: destination.url,
         request_method: destination.http_method,
-        request_headers: build_request_headers(event, destination, connection),
+        request_headers: sanitize_headers_for_storage(build_request_headers(event, destination, connection)),
         request_body: truncate_body(request_body),
         duration_ms: ((Time.current - started_at) * 1000).to_i,
         error_message: e.message,
@@ -100,12 +100,14 @@ class DeliverWebhookJob < ApplicationJob
   end
 
   def request_body_for(event)
-    # Use raw_body if available (new events), fallback to JSON for legacy events
-    if event.raw_body.present?
-      event.raw_body
-    else
-      event.payload.to_json
-    end
+    event.raw_body
+  end
+
+  def sanitize_headers_for_storage(headers)
+    result = headers.transform_keys(&:to_s)
+    auth_keys = result.keys.select { |k| k.casecmp?("authorization") }
+    auth_keys.each { |k| result[k] = "[REDACTED]" }
+    result
   end
 
   # Headers that should never be forwarded (hop-by-hop or conflict with destination)

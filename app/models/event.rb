@@ -1,6 +1,8 @@
 # frozen_string_literal: true
 
 class Event < ApplicationRecord
+  encrypts :raw_body
+
   belongs_to :source
   has_many :deliveries, dependent: :destroy
   has_one :organization, through: :source
@@ -56,6 +58,15 @@ class Event < ApplicationRecord
     return "[Invalid encoding, #{body_size} bytes]" unless body_str.valid_encoding?
 
     body_str.truncate(max_length)
+  end
+
+  # Parse raw_body as JSON (replaces payload column usage)
+  def parsed_body
+    return nil if raw_body.blank? || binary?
+
+    JSON.parse(raw_body)
+  rescue JSON::ParserError
+    nil
   end
 
   private

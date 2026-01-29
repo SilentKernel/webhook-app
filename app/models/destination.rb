@@ -1,4 +1,6 @@
 class Destination < ApplicationRecord
+  encrypts :auth_value
+
   belongs_to :organization
   has_many :connections, dependent: :destroy
   has_many :deliveries, dependent: :destroy

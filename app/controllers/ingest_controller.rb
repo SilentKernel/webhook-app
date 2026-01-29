@@ -101,60 +101,18 @@ class IngestController < ActionController::Base
     raw_body = request.raw_post
     is_binary = binary_content?
 
-    if store_body
-      payload = request_payload(raw_body)
-      stored_body = raw_body
-    else
-      # For oversized payloads, store only metadata
-      payload = {
-        _error: "payload_too_large",
-        _size: raw_body.bytesize,
-        _content_type: request.content_type
-      }
-      stored_body = nil
-    end
-
     @source.events.create!(
       status: status,
-      payload: payload,
-      raw_body: stored_body,
+      raw_body: store_body ? raw_body : nil,
       body_is_binary: is_binary,
       body_size: raw_body.bytesize,
       headers: request_headers,
       query_params: request.query_parameters,
       source_ip: request.remote_ip,
       content_type: request.content_type,
-      event_type: store_body ? extract_event_type(payload) : nil,
+      event_type: store_body ? extract_event_type(raw_body) : nil,
       received_at: Time.current
     )
-  end
-
-  def request_payload(raw_body)
-    content_type = request.content_type.to_s
-
-    if content_type.include?("application/json")
-      # JSON: parse to hash
-      JSON.parse(raw_body) rescue { _format: "json", _error: "parse_failed", _preview: raw_body.truncate(500) }
-    elsif content_type.include?("application/x-www-form-urlencoded")
-      # Form-urlencoded: parse to hash
-      Rack::Utils.parse_nested_query(raw_body)
-    elsif content_type.include?("xml")
-      # XML: store metadata only (parsing is complex and often unnecessary)
-      { _format: "xml", _size: raw_body.bytesize, _preview: raw_body.truncate(500) }
-    elsif content_type.start_with?("text/")
-      # Plain text: store content directly
-      { _content: raw_body.truncate(65_535) }
-    elsif binary_content?
-      # Binary: store metadata only
-      { _format: "binary", _content_type: content_type, _size: raw_body.bytesize }
-    else
-      # Unknown: store as text if valid UTF-8, otherwise as binary metadata
-      if raw_body.force_encoding("UTF-8").valid_encoding?
-        { _content: raw_body.truncate(65_535) }
-      else
-        { _format: "binary", _content_type: content_type, _size: raw_body.bytesize }
-      end
-    end
   end
 
   def binary_content?
@@ -180,12 +138,22 @@ class IngestController < ActionController::Base
     headers
   end
 
-  def extract_event_type(payload)
-    # Common patterns for event type extraction
-    payload["type"] ||           # Stripe, many others
-      payload["event_type"] ||   # Some providers
-      payload["event"] ||        # Some providers
-      request.headers["X-GitHub-Event"] ||   # GitHub
+  def extract_event_type(raw_body)
+    # Try to parse JSON to extract event type
+    if request.content_type.to_s.include?("application/json")
+      begin
+        payload = JSON.parse(raw_body)
+        event_type = payload["type"] ||       # Stripe, many others
+                     payload["event_type"] || # Some providers
+                     payload["event"]         # Some providers
+        return event_type if event_type.present?
+      rescue JSON::ParserError
+        # Fall through to header-based extraction
+      end
+    end
+
+    # Header-based event type extraction
+    request.headers["X-GitHub-Event"] ||   # GitHub
       request.headers["X-Shopify-Topic"] ||  # Shopify
       nil
   end

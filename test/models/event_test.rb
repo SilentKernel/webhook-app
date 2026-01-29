@@ -99,10 +99,10 @@ class EventTest < ActiveSupport::TestCase
     assert events.all? { |e| e.received_at <= time }
   end
 
-  test "stores payload as jsonb" do
+  test "parses JSON raw_body via parsed_body" do
     event = events(:stripe_payment_event)
-    assert_kind_of Hash, event.payload
-    assert_equal "pay_123", event.payload["id"]
+    assert_kind_of Hash, event.parsed_body
+    assert_equal "pay_123", event.parsed_body["id"]
   end
 
   test "stores headers as jsonb" do
