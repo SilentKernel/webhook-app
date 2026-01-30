@@ -16,4 +16,12 @@ class Destination < ApplicationRecord
   validates :http_method, inclusion: { in: %w[POST PUT PATCH GET DELETE] }
   validates :timeout_seconds, numericality: { greater_than: 0 }, allow_nil: true
   validates :max_delivery_rate, numericality: { greater_than: 0 }, allow_nil: true
+
+  before_save :normalize_auth_value
+
+  private
+
+  def normalize_auth_value
+    self.auth_value = nil if auth_value.blank?
+  end
 end

@@ -31,24 +31,34 @@ class EventsController < ApplicationController
       return
     end
 
-    connections = @event.source.connections.active
+    connections = @event.source.connections.active.includes(:destination)
 
-    if connections.empty?
-      redirect_to event_path(@event), alert: "No active connections to replay to."
+    # Filter to connections that pass rules and have active destinations
+    eligible_connections = connections.select do |connection|
+      connection.destination.status_active? && connection.passes_filters?(@event)
+    end
+
+    if eligible_connections.empty?
+      redirect_to event_path(@event), alert: "No eligible connections to replay to."
       return
     end
 
-    connections.each do |connection|
+    eligible_connections.each do |connection|
       delivery = @event.deliveries.create!(
         connection: connection,
         destination: connection.destination,
         status: :queued,
         max_attempts: Delivery::DEFAULT_MAX_ATTEMPTS
       )
-      DeliverWebhookJob.perform_later(delivery.id)
+
+      if connection.delay_seconds > 0
+        DeliverWebhookJob.set(wait: connection.delay_seconds.seconds).perform_later(delivery.id)
+      else
+        DeliverWebhookJob.perform_later(delivery.id)
+      end
     end
 
-    redirect_to event_path(@event), notice: "Event queued for replay to #{connections.count} destination(s)."
+    redirect_to event_path(@event), notice: "Event queued for replay to #{eligible_connections.count} destination(s)."
   end
 
   private

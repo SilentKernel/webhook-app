@@ -92,7 +92,7 @@ class EventsControllerTest < ActionDispatch::IntegrationTest
     post replay_event_url(event_without_connections, locale: :en)
 
     assert_redirected_to event_path(event_without_connections, locale: :en)
-    assert_equal "No active connections to replay to.", flash[:alert]
+    assert_equal "No eligible connections to replay to.", flash[:alert]
   end
 
   test "replay should not work for event from another organization" do

@@ -75,5 +75,5 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate!
 
   # Allow reading unencrypted data during migration period
-  config.active_record.encryption.support_unencrypted_data = true
+  # config.active_record.encryption.support_unencrypted_data = true
 end

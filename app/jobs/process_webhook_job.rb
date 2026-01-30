@@ -18,7 +18,7 @@ class ProcessWebhookJob < ApplicationJob
       next unless connection.destination.status_active?
 
       # Apply filter rules
-      next unless passes_filters?(event, connection)
+      next unless connection.passes_filters?(event)
 
       # Create delivery
       delivery = event.deliveries.create!(
@@ -29,42 +29,11 @@ class ProcessWebhookJob < ApplicationJob
       )
 
       # Check for delay rule
-      delay_seconds = extract_delay(connection)
-
-      if delay_seconds > 0
-        DeliverWebhookJob.set(wait: delay_seconds.seconds).perform_later(delivery.id)
+      if connection.delay_seconds > 0
+        DeliverWebhookJob.set(wait: connection.delay_seconds.seconds).perform_later(delivery.id)
       else
         DeliverWebhookJob.perform_later(delivery.id)
       end
     end
-  end
-
-  private
-
-  def passes_filters?(event, connection)
-    rules = connection.rules || []
-
-    filter_rules = rules.select { |r| r["type"] == "filter" }
-    return true if filter_rules.empty?
-
-    filter_rules.all? do |rule|
-      config = rule["config"] || {}
-
-      # Event type filter
-      if config["event_types"].present?
-        event_types = Array(config["event_types"])
-        return false unless event_types.include?(event.event_type)
-      end
-
-      true
-    end
-  end
-
-  def extract_delay(connection)
-    rules = connection.rules || []
-    delay_rule = rules.find { |r| r["type"] == "delay" }
-    return 0 unless delay_rule
-
-    delay_rule.dig("config", "seconds").to_i
   end
 end

@@ -20,6 +20,7 @@ class Source < ApplicationRecord
 
   before_validation :generate_ingest_token, on: :create
   before_validation :set_verification_from_source_type, on: :create
+  before_save :normalize_verification_secret
 
   def ingest_url
     "/ingest/#{ingest_token}"
@@ -45,5 +46,9 @@ class Source < ApplicationRecord
     if source_type.present? && verification_type_id.blank?
       self.verification_type = source_type.verification_type
     end
+  end
+
+  def normalize_verification_secret
+    self.verification_secret = nil if verification_secret.blank?
   end
 end

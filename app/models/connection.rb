@@ -12,6 +12,32 @@ class Connection < ApplicationRecord
   scope :active, -> { where(status: :active) }
   scope :ordered, -> { order(priority: :asc) }
 
+  # Check if an event passes all filter rules for this connection
+  def passes_filters?(event)
+    filter_rules = (rules || []).select { |r| r["type"] == "filter" }
+    return true if filter_rules.empty?
+
+    filter_rules.all? do |rule|
+      config = rule["config"] || {}
+
+      # Event type filter
+      if config["event_types"].present?
+        event_types = Array(config["event_types"])
+        return false unless event_types.include?(event.event_type)
+      end
+
+      true
+    end
+  end
+
+  # Get the delay in seconds from delay rules, or 0 if no delay
+  def delay_seconds
+    delay_rule = (rules || []).find { |r| r["type"] == "delay" }
+    return 0 unless delay_rule
+
+    delay_rule.dig("config", "seconds").to_i
+  end
+
   private
 
   def source_and_destination_same_organization
