@@ -159,6 +159,16 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     end
   end
 
+  test "skips cancelled delivery" do
+    @delivery.update!(status: :cancelled)
+
+    stub_request(:post, @destination.url)
+
+    assert_no_difference "DeliveryAttempt.count" do
+      DeliverWebhookJob.perform_now(@delivery.id)
+    end
+  end
+
   test "does nothing for non-existent delivery" do
     assert_no_difference "DeliveryAttempt.count" do
       DeliverWebhookJob.perform_now(-1)

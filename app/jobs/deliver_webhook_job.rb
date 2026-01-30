@@ -6,7 +6,7 @@ class DeliverWebhookJob < ApplicationJob
   def perform(delivery_id)
     delivery = Delivery.find_by(id: delivery_id)
     return unless delivery
-    return if delivery.success? # Already delivered
+    return if delivery.success? || delivery.cancelled?
 
     delivery.update!(status: :delivering)
 

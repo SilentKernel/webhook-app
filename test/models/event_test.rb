@@ -193,4 +193,60 @@ class EventTest < ActiveSupport::TestCase
     event = Event.new(status: :payload_too_large)
     assert_not event.replayable?
   end
+
+  # Decryption error handling tests
+  test "decrypted_raw_body returns raw_body when decryption succeeds" do
+    event = Event.new(
+      source: sources(:stripe_production),
+      received_at: Time.current,
+      raw_body: '{"test": "data"}'
+    )
+    event.save!
+    assert_equal '{"test": "data"}', event.reload.decrypted_raw_body
+  end
+
+  test "decrypted_raw_body returns nil when decryption fails" do
+    event = Event.new(
+      source: sources(:stripe_production),
+      received_at: Time.current
+    )
+    event.save!
+
+    # Simulate decryption failure by defining a method that raises
+    event.define_singleton_method(:raw_body) do
+      raise ActiveRecord::Encryption::Errors::Decryption
+    end
+
+    assert_nil event.decrypted_raw_body
+  end
+
+  test "displayable_body returns nil when decryption fails" do
+    event = Event.new(
+      source: sources(:stripe_production),
+      received_at: Time.current
+    )
+    event.save!
+
+    # Simulate decryption failure
+    event.define_singleton_method(:raw_body) do
+      raise ActiveRecord::Encryption::Errors::Decryption
+    end
+
+    assert_nil event.displayable_body
+  end
+
+  test "parsed_body returns nil when decryption fails" do
+    event = Event.new(
+      source: sources(:stripe_production),
+      received_at: Time.current
+    )
+    event.save!
+
+    # Simulate decryption failure
+    event.define_singleton_method(:raw_body) do
+      raise ActiveRecord::Encryption::Errors::Decryption
+    end
+
+    assert_nil event.parsed_body
+  end
 end

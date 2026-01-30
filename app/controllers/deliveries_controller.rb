@@ -3,7 +3,7 @@
 class DeliveriesController < ApplicationController
   before_action :authenticate_user!
   before_action :require_organization
-  before_action :set_delivery, only: [ :show, :retry ]
+  before_action :set_delivery, only: [ :show, :retry, :cancel ]
 
   def index
     @destinations = current_organization.destinations
@@ -34,6 +34,17 @@ class DeliveriesController < ApplicationController
     DeliverWebhookJob.perform_later(@delivery.id)
 
     redirect_to delivery_path(@delivery), notice: "Delivery queued for retry."
+  end
+
+  def cancel
+    unless @delivery.cancellable?
+      redirect_to delivery_path(@delivery), alert: "Cannot cancel this delivery."
+      return
+    end
+
+    @delivery.mark_cancelled!
+
+    redirect_to delivery_path(@delivery), notice: "Delivery cancelled. No more retries will be attempted."
   end
 
   private

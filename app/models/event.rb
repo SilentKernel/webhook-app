@@ -29,6 +29,14 @@ class Event < ApplicationRecord
     received?
   end
 
+  # Safe accessor for encrypted raw_body field
+  # Returns nil if decryption fails (e.g., due to key rotation)
+  def decrypted_raw_body
+    raw_body
+  rescue ActiveRecord::Encryption::Errors::Decryption
+    nil
+  end
+
   # Content-type detection helpers
   def json?
     content_type.to_s.include?("application/json")
@@ -51,10 +59,11 @@ class Event < ApplicationRecord
   end
 
   def displayable_body(max_length: 2000)
-    return nil if raw_body.blank?
+    body = decrypted_raw_body
+    return nil if body.blank?
     return "[Binary content, #{body_size} bytes]" if binary?
 
-    body_str = raw_body.force_encoding("UTF-8")
+    body_str = body.force_encoding("UTF-8")
     return "[Invalid encoding, #{body_size} bytes]" unless body_str.valid_encoding?
 
     body_str.truncate(max_length)
@@ -62,9 +71,10 @@ class Event < ApplicationRecord
 
   # Parse raw_body as JSON (replaces payload column usage)
   def parsed_body
-    return nil if raw_body.blank? || binary?
+    body = decrypted_raw_body
+    return nil if body.blank? || binary?
 
-    JSON.parse(raw_body)
+    JSON.parse(body)
   rescue JSON::ParserError
     nil
   end

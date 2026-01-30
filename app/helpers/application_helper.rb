@@ -52,14 +52,15 @@ module ApplicationHelper
     content_tag(:span, status.to_s.titleize, class: "badge #{css_class}")
   end
 
-  # Badge for delivery statuses (pending, queued, delivering, success, failed)
+  # Badge for delivery statuses (pending, queued, delivering, success, failed, cancelled)
   def delivery_status_badge(status)
     colors = {
       "pending" => "badge-ghost",
       "queued" => "badge-ghost",
       "delivering" => "badge-info",
       "success" => "badge-success",
-      "failed" => "badge-error"
+      "failed" => "badge-error",
+      "cancelled" => "badge-warning"
     }
     css_class = colors[status.to_s] || "badge-ghost"
     content_tag(:span, status.to_s.titleize, class: "badge #{css_class}")

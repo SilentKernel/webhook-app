@@ -160,7 +160,7 @@
     <div class="card-body">
       <div class="flex justify-between items-center">
         <h2 class="card-title">Payload</h2>
-        <% if @event.raw_body.present? %>
+        <% if @event.decrypted_raw_body.present? %>
           <div data-controller="clipboard" data-clipboard-success-content-value="Copied!">
             <input type="hidden" value="<%= @event.displayable_body %>" data-clipboard-target="source">
             <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-sm" title="Copy payload">
@@ -172,7 +172,7 @@
           </div>
         <% end %>
       </div>
-      <% if @event.raw_body.present? %>
+      <% if @event.decrypted_raw_body.present? %>
         <div tabindex="0" class="collapse collapse-arrow bg-base-200">
           <input type="checkbox" checked />
           <div class="collapse-title font-medium">

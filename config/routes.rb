@@ -99,6 +99,7 @@ Rails.application.routes.draw do
     resources :deliveries, only: [:index, :show] do
       member do
         post :retry
+        post :cancel
       end
     end
 

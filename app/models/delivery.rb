@@ -11,7 +11,7 @@ class Delivery < ApplicationRecord
   has_one :source, through: :event
   has_one :organization, through: :event
 
-  enum :status, { pending: 0, queued: 1, delivering: 2, success: 3, failed: 4 }
+  enum :status, { pending: 0, queued: 1, delivering: 2, success: 3, failed: 4, cancelled: 5 }
 
   validates :status, presence: true
   validates :attempt_count, numericality: { greater_than_or_equal_to: 0 }
@@ -32,6 +32,14 @@ class Delivery < ApplicationRecord
 
   def retryable?
     failed?
+  end
+
+  def cancellable?
+    failed? && can_retry? && next_attempt_at.present?
+  end
+
+  def mark_cancelled!
+    update!(status: :cancelled, completed_at: Time.current, next_attempt_at: nil)
   end
 
   def mark_success!

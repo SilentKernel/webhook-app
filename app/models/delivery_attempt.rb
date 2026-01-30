@@ -26,4 +26,16 @@ class DeliveryAttempt < ApplicationRecord
 
     duration_ms / 1000.0
   end
+
+  def decrypted_request_body
+    request_body
+  rescue ActiveRecord::Encryption::Errors::Decryption
+    nil
+  end
+
+  def decrypted_response_body
+    response_body
+  rescue ActiveRecord::Encryption::Errors::Decryption
+    nil
+  end
 end

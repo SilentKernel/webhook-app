@@ -20,6 +20,12 @@
       <% else %>
         <span class="btn btn-disabled" title="Can only retry failed deliveries">Retry Now</span>
       <% end %>
+      <% if @delivery.cancellable? %>
+        <%= button_to "Cancel", cancel_delivery_path(@delivery),
+            method: :post,
+            class: "btn btn-error",
+            data: { turbo_confirm: "This will permanently cancel the delivery and stop all retries. Continue?" } %>
+      <% end %>
     </div>
   </div>
 
@@ -150,13 +156,14 @@
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %></pre>
                         </div>
                       <% end %>
-                      <% if attempt.request_body.present? %>
+                      <% request_body = attempt.decrypted_request_body %>
+                      <% if request_body.present? %>
                         <div>
                           <strong>Body:</strong>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
-                            JSON.pretty_generate(JSON.parse(attempt.request_body))
+                            JSON.pretty_generate(JSON.parse(request_body))
                           rescue
-                            attempt.request_body.truncate(2000)
+                            request_body.truncate(2000)
                           end %></pre>
                         </div>
                       <% end %>
@@ -182,19 +189,20 @@
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %></pre>
                         </div>
                       <% end %>
-                      <% if attempt.response_body.present? %>
+                      <% response_body = attempt.decrypted_response_body %>
+                      <% if response_body.present? %>
                         <div>
                           <strong>Body:</strong>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
-                            JSON.pretty_generate(JSON.parse(attempt.response_body))
+                            JSON.pretty_generate(JSON.parse(response_body))
                           rescue
-                            attempt.response_body.truncate(2000)
+                            response_body.truncate(2000)
                           end %></pre>
                         </div>
-                        <% if html_response?(attempt.response_body) %>
+                        <% if html_response?(response_body) %>
                           <div class="mt-2">
                             <strong>Cleaned Response:</strong>
-                            <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= cleaned_response_body(attempt.response_body).truncate(2000) %></pre>
+                            <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= cleaned_response_body(response_body).truncate(2000) %></pre>
                           </div>
                         <% end %>
                       <% end %>

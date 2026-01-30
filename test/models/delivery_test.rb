@@ -67,6 +67,7 @@ class DeliveryTest < ActiveSupport::TestCase
     assert_equal 2, Delivery.statuses[:delivering]
     assert_equal 3, Delivery.statuses[:success]
     assert_equal 4, Delivery.statuses[:failed]
+    assert_equal 5, Delivery.statuses[:cancelled]
   end
 
   test "default status is pending" do
@@ -289,6 +290,83 @@ class DeliveryTest < ActiveSupport::TestCase
 
       max_backoff = 24.hours
       assert_equal Time.current + max_backoff, delivery.calculate_next_attempt_at
+    end
+  end
+
+  # Cancellable tests
+
+  test "cancellable? returns true when failed with pending retries" do
+    delivery = Delivery.create!(
+      event: events(:github_push_event),
+      connection: connections(:paused_connection),
+      destination: destinations(:staging_api),
+      status: :failed,
+      attempt_count: 2,
+      max_attempts: 18,
+      next_attempt_at: 1.hour.from_now
+    )
+    assert delivery.cancellable?
+  end
+
+  test "cancellable? returns false when status is success" do
+    delivery = deliveries(:successful_delivery)
+    assert_not delivery.cancellable?
+  end
+
+  test "cancellable? returns false when status is pending" do
+    delivery = deliveries(:pending_delivery)
+    assert_not delivery.cancellable?
+  end
+
+  test "cancellable? returns false when failed at max attempts" do
+    delivery = deliveries(:failed_delivery)
+    # This delivery has reached max_attempts
+    assert_not delivery.can_retry?
+    assert_not delivery.cancellable?
+  end
+
+  test "cancellable? returns false when failed without next_attempt_at" do
+    delivery = Delivery.create!(
+      event: events(:github_push_event),
+      connection: connections(:paused_connection),
+      destination: destinations(:staging_api),
+      status: :failed,
+      attempt_count: 2,
+      max_attempts: 18,
+      next_attempt_at: nil
+    )
+    assert_not delivery.cancellable?
+  end
+
+  test "cancellable? returns false when status is cancelled" do
+    delivery = Delivery.create!(
+      event: events(:github_push_event),
+      connection: connections(:paused_connection),
+      destination: destinations(:staging_api),
+      status: :cancelled,
+      attempt_count: 2,
+      max_attempts: 18
+    )
+    assert_not delivery.cancellable?
+  end
+
+  test "mark_cancelled! sets status to cancelled and clears next_attempt_at" do
+    delivery = Delivery.create!(
+      event: events(:github_push_event),
+      connection: connections(:paused_connection),
+      destination: destinations(:staging_api),
+      status: :failed,
+      attempt_count: 2,
+      max_attempts: 18,
+      next_attempt_at: 1.hour.from_now
+    )
+
+    freeze_time do
+      delivery.mark_cancelled!
+
+      assert delivery.cancelled?
+      assert_nil delivery.next_attempt_at
+      assert_equal Time.current, delivery.completed_at
     end
   end
 end

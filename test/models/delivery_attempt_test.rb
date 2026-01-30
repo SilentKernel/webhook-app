@@ -201,4 +201,66 @@ class DeliveryAttemptTest < ActiveSupport::TestCase
     assert_equal "Request timed out after 30 seconds", attempt.error_message
     assert_equal "timeout", attempt.error_code
   end
+
+  test "decrypted_request_body returns request_body when decryption succeeds" do
+    attempt = DeliveryAttempt.new(
+      delivery: deliveries(:pending_delivery),
+      attempt_number: 5,
+      request_url: "https://api.example.com/webhooks",
+      request_method: "POST",
+      attempted_at: Time.current,
+      request_body: '{"test": "data"}'
+    )
+    attempt.save!
+    assert_equal '{"test": "data"}', attempt.reload.decrypted_request_body
+  end
+
+  test "decrypted_request_body returns nil when decryption fails" do
+    attempt = DeliveryAttempt.new(
+      delivery: deliveries(:pending_delivery),
+      attempt_number: 6,
+      request_url: "https://api.example.com/webhooks",
+      request_method: "POST",
+      attempted_at: Time.current
+    )
+    attempt.save!
+
+    # Simulate decryption failure by defining a method that raises
+    attempt.define_singleton_method(:request_body) do
+      raise ActiveRecord::Encryption::Errors::Decryption
+    end
+
+    assert_nil attempt.decrypted_request_body
+  end
+
+  test "decrypted_response_body returns response_body when decryption succeeds" do
+    attempt = DeliveryAttempt.new(
+      delivery: deliveries(:pending_delivery),
+      attempt_number: 7,
+      request_url: "https://api.example.com/webhooks",
+      request_method: "POST",
+      attempted_at: Time.current,
+      response_body: '{"status": "ok"}'
+    )
+    attempt.save!
+    assert_equal '{"status": "ok"}', attempt.reload.decrypted_response_body
+  end
+
+  test "decrypted_response_body returns nil when decryption fails" do
+    attempt = DeliveryAttempt.new(
+      delivery: deliveries(:pending_delivery),
+      attempt_number: 8,
+      request_url: "https://api.example.com/webhooks",
+      request_method: "POST",
+      attempted_at: Time.current
+    )
+    attempt.save!
+
+    # Simulate decryption failure by defining a method that raises
+    attempt.define_singleton_method(:response_body) do
+      raise ActiveRecord::Encryption::Errors::Decryption
+    end
+
+    assert_nil attempt.decrypted_response_body
+  end
 end

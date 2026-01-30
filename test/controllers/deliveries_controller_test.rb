@@ -140,4 +140,87 @@ class DeliveriesControllerTest < ActionDispatch::IntegrationTest
     post retry_delivery_url(other_org_delivery, locale: :en)
     assert_response :not_found
   end
+
+  # Cancel tests
+  test "should cancel failed delivery with pending retries" do
+    # Create a cancellable delivery
+    cancellable_delivery = Delivery.create!(
+      event: @event,
+      connection: connections(:stripe_to_production),
+      destination: @destination,
+      status: :failed,
+      attempt_count: 2,
+      max_attempts: 18,
+      next_attempt_at: 1.hour.from_now
+    )
+
+    post cancel_delivery_url(cancellable_delivery, locale: :en)
+    assert_redirected_to delivery_url(cancellable_delivery, locale: :en)
+    assert_equal "Delivery cancelled. No more retries will be attempted.", flash[:notice]
+
+    cancellable_delivery.reload
+    assert cancellable_delivery.cancelled?
+    assert_nil cancellable_delivery.next_attempt_at
+    assert_not_nil cancellable_delivery.completed_at
+  end
+
+  test "should not cancel successful delivery" do
+    post cancel_delivery_url(@successful_delivery, locale: :en)
+    assert_redirected_to delivery_url(@successful_delivery, locale: :en)
+    assert_equal "Cannot cancel this delivery.", flash[:alert]
+
+    @successful_delivery.reload
+    assert @successful_delivery.success?
+  end
+
+  test "should not cancel pending delivery" do
+    post cancel_delivery_url(@pending_delivery, locale: :en)
+    assert_redirected_to delivery_url(@pending_delivery, locale: :en)
+    assert_equal "Cannot cancel this delivery.", flash[:alert]
+
+    @pending_delivery.reload
+    assert @pending_delivery.pending?
+  end
+
+  test "should not cancel failed delivery at max attempts" do
+    post cancel_delivery_url(@failed_delivery, locale: :en)
+    assert_redirected_to delivery_url(@failed_delivery, locale: :en)
+    assert_equal "Cannot cancel this delivery.", flash[:alert]
+
+    @failed_delivery.reload
+    assert @failed_delivery.failed?
+  end
+
+  test "should not cancel already cancelled delivery" do
+    cancelled_delivery = Delivery.create!(
+      event: @event,
+      connection: connections(:stripe_to_production),
+      destination: @destination,
+      status: :cancelled,
+      attempt_count: 2,
+      max_attempts: 18
+    )
+
+    post cancel_delivery_url(cancelled_delivery, locale: :en)
+    assert_redirected_to delivery_url(cancelled_delivery, locale: :en)
+    assert_equal "Cannot cancel this delivery.", flash[:alert]
+  end
+
+  test "should not cancel delivery from another organization" do
+    other_org_event = events(:other_org_event)
+    other_org_connection = connections(:other_org_connection)
+    other_org_destination = destinations(:other_org_destination)
+    other_org_delivery = Delivery.create!(
+      event: other_org_event,
+      connection: other_org_connection,
+      destination: other_org_destination,
+      status: :failed,
+      attempt_count: 2,
+      max_attempts: 18,
+      next_attempt_at: 1.hour.from_now
+    )
+
+    post cancel_delivery_url(other_org_delivery, locale: :en)
+    assert_response :not_found
+  end
 end
