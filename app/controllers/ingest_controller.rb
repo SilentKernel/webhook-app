@@ -16,6 +16,7 @@ class IngestController < ActionController::Base
     X-Forwarded-Host
     X-Forwarded-Scheme
     X-Forwarded-Ssl
+    X-Real-Ip
     Forwarded
     Via
   ].freeze

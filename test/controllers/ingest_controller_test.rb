@@ -379,6 +379,7 @@ class IngestControllerTest < ActionDispatch::IntegrationTest
            "X-Forwarded-Host" => "example.com",
            "X-Forwarded-Scheme" => "https",
            "X-Forwarded-Ssl" => "on",
+           "X-Real-Ip" => "1.2.3.4",
            "Forwarded" => "for=1.2.3.4;proto=https",
            "Via" => "1.1 vegur",
            "X-Custom-Header" => "keep-me"
