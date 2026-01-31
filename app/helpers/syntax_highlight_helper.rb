@@ -4,13 +4,13 @@ module SyntaxHighlightHelper
   # @param language [String, nil] optional language hint (json, html, xml, etc.)
   # @return [String] HTML with syntax highlighting
   def highlight_code(content, language: nil)
-    return content_tag(:pre, "", class: "highlight p-4 rounded overflow-x-auto text-sm") if content.blank?
+    return content_tag(:pre, "", class: "highlight h-full p-4 rounded overflow-x-auto text-sm") if content.blank?
 
     lexer = find_lexer(content, language)
     formatter = Rouge::Formatters::HTML.new
     highlighted = formatter.format(lexer.lex(content))
 
-    content_tag(:pre, class: "highlight p-4 rounded overflow-x-auto text-sm") do
+    content_tag(:pre, class: "highlight h-full p-4 rounded overflow-x-auto text-sm") do
       content_tag(:code, highlighted.html_safe, class: "language-#{lexer.tag}")
     end
   end

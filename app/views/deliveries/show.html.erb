@@ -144,139 +144,169 @@
                 </div>
               </div>
               <div class="collapse-content">
-                <div class="grid md:grid-cols-2 gap-6 pt-4">
-                  <div>
-                    <h4 class="font-semibold mb-2">Request</h4>
-                    <div class="space-y-2">
-                      <p><strong>URL:</strong> <code class="bg-base-300 px-2 py-1 rounded text-xs break-all"><%= attempt.request_url %></code></p>
-                      <p><strong>Method:</strong> <span class="badge badge-outline"><%= attempt.request_method %></span></p>
-                      <% if attempt.request_headers.present? && attempt.request_headers.any? %>
-                        <div>
-                          <div class="flex items-center gap-2">
-                            <strong>Headers:</strong>
-                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
-                              <input type="hidden" value="<%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %>" data-clipboard-target="source">
-                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy headers">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
-                                Copy
-                              </button>
-                            </div>
-                          </div>
-                          <div class="mt-1 max-h-32 overflow-y-auto">
-                            <%= highlight_code(JSON.pretty_generate(attempt.request_headers), language: "json") rescue highlight_code(attempt.request_headers.to_s) %>
-                          </div>
-                        </div>
-                      <% end %>
-                      <% request_body = attempt.decrypted_request_body %>
-                      <% if request_body.present? %>
-                        <div>
-                          <div class="flex items-center gap-2">
-                            <strong>Body:</strong>
-                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
-                              <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(request_body)) rescue request_body end %>" data-clipboard-target="source">
-                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy body">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
-                                Copy
-                              </button>
-                            </div>
-                          </div>
-                          <div class="mt-1 max-h-48 overflow-y-auto">
-                            <%= begin
-                              highlight_code(JSON.pretty_generate(JSON.parse(request_body)), language: "json")
-                            rescue
-                              highlight_code(request_body.truncate(2000))
-                            end %>
-                          </div>
-                        </div>
+                <% request_body = attempt.decrypted_request_body %>
+                <% response_body = attempt.decrypted_response_body %>
+
+                <div class="space-y-4 pt-4">
+                  <%# Row 1: Column Headers %>
+                  <div class="grid md:grid-cols-2 gap-6">
+                    <h4 class="font-semibold text-base">Request</h4>
+                    <h4 class="font-semibold text-base">Response</h4>
+                  </div>
+
+                  <%# Row 2: URL / Status %>
+                  <div class="grid md:grid-cols-2 gap-6 items-stretch">
+                    <div class="bg-base-300 rounded-lg p-3">
+                      <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">URL</div>
+                      <code class="text-xs break-all"><%= attempt.request_url %></code>
+                      <div class="mt-2">
+                        <span class="badge badge-outline"><%= attempt.request_method %></span>
+                      </div>
+                    </div>
+                    <div class="bg-base-300 rounded-lg p-3">
+                      <div class="text-xs text-base-content/60 uppercase tracking-wide mb-1">Status</div>
+                      <% if attempt.response_status.present? %>
+                        <span class="badge <%= attempt.success? ? 'badge-success' : 'badge-error' %>">
+                          <%= attempt.response_status %>
+                        </span>
+                      <% else %>
+                        <span class="text-base-content/60 text-sm">No response received</span>
                       <% end %>
                     </div>
                   </div>
 
-                  <div>
-                    <h4 class="font-semibold mb-2">Response</h4>
-                    <div class="space-y-2">
-                      <% if attempt.response_status.present? %>
-                        <p>
-                          <strong>Status:</strong>
-                          <span class="badge <%= attempt.success? ? 'badge-success' : 'badge-error' %>">
-                            <%= attempt.response_status %>
-                          </span>
-                        </p>
-                      <% else %>
-                        <p class="text-base-content/60">No response received</p>
-                      <% end %>
-                      <% if attempt.response_headers.present? && attempt.response_headers.any? %>
-                        <div>
-                          <div class="flex items-center gap-2">
-                            <strong>Headers:</strong>
-                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
-                              <input type="hidden" value="<%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %>" data-clipboard-target="source">
-                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy headers">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
-                                Copy
-                              </button>
-                            </div>
-                          </div>
-                          <div class="mt-1 max-h-32 overflow-y-auto">
-                            <%= highlight_code(JSON.pretty_generate(attempt.response_headers), language: "json") rescue highlight_code(attempt.response_headers.to_s) %>
-                          </div>
-                        </div>
-                      <% end %>
-                      <% response_body = attempt.decrypted_response_body %>
-                      <% if response_body.present? %>
-                        <div>
-                          <div class="flex items-center gap-2">
-                            <strong>Body:</strong>
-                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
-                              <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(response_body)) rescue response_body end %>" data-clipboard-target="source">
-                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy body">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                                </svg>
-                                Copy
-                              </button>
-                            </div>
-                          </div>
-                          <div class="mt-1 max-h-48 overflow-y-auto">
-                            <%= begin
-                              highlight_code(JSON.pretty_generate(JSON.parse(response_body)), language: "json")
-                            rescue
-                              highlight_code(response_body.truncate(2000))
-                            end %>
-                          </div>
-                        </div>
-                        <% if html_response?(response_body) %>
-                          <div class="mt-2">
-                            <strong>Cleaned Response:</strong>
-                            <div class="mt-1 max-h-48 overflow-y-auto">
-                              <%= highlight_code(cleaned_response_body(response_body).truncate(2000)) %>
-                            </div>
+                  <%# Row 3: Headers %>
+                  <div class="grid md:grid-cols-2 gap-6 items-stretch">
+                    <div class="bg-base-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 pb-0">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Headers</div>
+                        <% if attempt.request_headers.present? && attempt.request_headers.any? %>
+                          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                            <input type="hidden" value="<%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %>" data-clipboard-target="source">
+                            <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy headers">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
                           </div>
                         <% end %>
-                      <% end %>
+                      </div>
+                      <div class="max-h-40 overflow-y-auto">
+                        <% if attempt.request_headers.present? && attempt.request_headers.any? %>
+                          <%= highlight_code(JSON.pretty_generate(attempt.request_headers), language: "json") rescue highlight_code(attempt.request_headers.to_s) %>
+                        <% else %>
+                          <span class="text-base-content/50 text-sm p-3">No headers</span>
+                        <% end %>
+                      </div>
                     </div>
+                    <div class="bg-base-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 pb-0">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Headers</div>
+                        <% if attempt.response_headers.present? && attempt.response_headers.any? %>
+                          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                            <input type="hidden" value="<%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %>" data-clipboard-target="source">
+                            <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy headers">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        <% end %>
+                      </div>
+                      <div class="max-h-40 overflow-y-auto">
+                        <% if attempt.response_headers.present? && attempt.response_headers.any? %>
+                          <%= highlight_code(JSON.pretty_generate(attempt.response_headers), language: "json") rescue highlight_code(attempt.response_headers.to_s) %>
+                        <% else %>
+                          <span class="text-base-content/50 text-sm p-3">No headers</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
 
-                    <% if attempt.error_message.present? %>
-                      <div class="alert alert-error mt-4">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                        <div>
-                          <h3 class="font-bold">Error</h3>
-                          <div class="text-sm"><%= attempt.error_message %></div>
-                          <% if attempt.error_code.present? %>
-                            <div class="text-xs mt-1">Code: <%= attempt.error_code %></div>
-                          <% end %>
+                  <%# Row 4: Body %>
+                  <div class="grid md:grid-cols-2 gap-6 items-stretch">
+                    <div class="bg-base-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 pb-0">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Body</div>
+                        <% if request_body.present? %>
+                          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                            <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(request_body)) rescue request_body end %>" data-clipboard-target="source">
+                            <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy body">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        <% end %>
+                      </div>
+                      <div class="h-64 overflow-y-auto">
+                        <% if request_body.present? %>
+                          <%= begin
+                            highlight_code(JSON.pretty_generate(JSON.parse(request_body)), language: "json")
+                          rescue
+                            highlight_code(request_body.truncate(2000))
+                          end %>
+                        <% else %>
+                          <span class="text-base-content/50 text-sm p-3">No body</span>
+                        <% end %>
+                      </div>
+                    </div>
+                    <div class="bg-base-200 rounded-lg">
+                      <div class="flex items-center justify-between p-3 pb-0">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide">Body</div>
+                        <% if response_body.present? %>
+                          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                            <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(response_body)) rescue response_body end %>" data-clipboard-target="source">
+                            <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy body">
+                              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                              </svg>
+                            </button>
+                          </div>
+                        <% end %>
+                      </div>
+                      <div class="h-64 overflow-y-auto">
+                        <% if response_body.present? %>
+                          <%= begin
+                            highlight_code(JSON.pretty_generate(JSON.parse(response_body)), language: "json")
+                          rescue
+                            highlight_code(response_body.truncate(2000))
+                          end %>
+                        <% else %>
+                          <span class="text-base-content/50 text-sm p-3">No body</span>
+                        <% end %>
+                      </div>
+                    </div>
+                  </div>
+
+                  <%# Row 5: Cleaned HTML Response (if applicable) %>
+                  <% if response_body.present? && html_response?(response_body) %>
+                    <div class="grid md:grid-cols-2 gap-6 items-start">
+                      <div></div>
+                      <div class="bg-base-200 rounded-lg">
+                        <div class="text-xs text-base-content/60 uppercase tracking-wide p-3 pb-0">Cleaned Response</div>
+                        <div class="max-h-48 overflow-y-auto">
+                          <%= highlight_code(cleaned_response_body(response_body).truncate(2000)) %>
                         </div>
                       </div>
-                    <% end %>
-                  </div>
+                    </div>
+                  <% end %>
+
+                  <%# Row 6: Error Message (if applicable) %>
+                  <% if attempt.error_message.present? %>
+                    <div class="alert alert-error">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <div>
+                        <h3 class="font-bold">Error</h3>
+                        <div class="text-sm"><%= attempt.error_message %></div>
+                        <% if attempt.error_code.present? %>
+                          <div class="text-xs mt-1">Code: <%= attempt.error_code %></div>
+                        <% end %>
+                      </div>
+                    </div>
+                  <% end %>
                 </div>
               </div>
             </div>
