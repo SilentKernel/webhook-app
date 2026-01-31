@@ -69,7 +69,7 @@ end
 group :test do
   # Use system testing [https://guides.rubyonrails.org/testing.html#system-testing]
   gem "capybara", "~> 3.40"
-  gem "selenium-webdriver", "~> 4.39"
+  gem "selenium-webdriver", "~> 4.40"
   # Pin minitest to avoid Rails 8 compatibility issue with minitest 6.x
   gem "minitest", "< 6.0"
   # Stub HTTP requests in tests
