@@ -159,8 +159,8 @@
           <div class="collapse-title font-medium">
             <%= @event.headers.keys.count %> header(s)
           </div>
-          <div class="collapse-content">
-            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-64"><%= JSON.pretty_generate(@event.headers) rescue @event.headers.to_s %></pre>
+          <div class="collapse-content max-h-64 overflow-y-auto">
+            <%= highlight_code(JSON.pretty_generate(@event.headers), language: "json") rescue highlight_code(@event.headers.to_s) %>
           </div>
         </div>
       <% else %>
@@ -191,9 +191,9 @@
           <div class="collapse-title font-medium">
             View payload
           </div>
-          <div class="collapse-content">
+          <div class="collapse-content max-h-96 overflow-y-auto">
             <% parsed = @event.parsed_body %>
-            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-96"><%= parsed ? JSON.pretty_generate(parsed) : @event.displayable_body %></pre>
+            <%= parsed ? highlight_code(JSON.pretty_generate(parsed), language: "json") : highlight_code(@event.displayable_body) %>
           </div>
         </div>
       <% else %>
@@ -211,8 +211,8 @@
           <div class="collapse-title font-medium">
             <%= @event.query_params.keys.count %> parameter(s)
           </div>
-          <div class="collapse-content">
-            <pre class="bg-base-300 p-4 rounded overflow-x-auto text-sm max-h-64"><%= JSON.pretty_generate(@event.query_params) rescue @event.query_params.to_s %></pre>
+          <div class="collapse-content max-h-64 overflow-y-auto">
+            <%= highlight_code(JSON.pretty_generate(@event.query_params), language: "json") rescue highlight_code(@event.query_params.to_s) %>
           </div>
         </div>
       </div>

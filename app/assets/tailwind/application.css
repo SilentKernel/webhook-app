@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "../stylesheets/rouge.css";
 
 @source not "./daisyui{,*}.mjs";
 

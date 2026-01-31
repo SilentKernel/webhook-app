@@ -164,7 +164,9 @@
                               </button>
                             </div>
                           </div>
-                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %></pre>
+                          <div class="mt-1 max-h-32 overflow-y-auto">
+                            <%= highlight_code(JSON.pretty_generate(attempt.request_headers), language: "json") rescue highlight_code(attempt.request_headers.to_s) %>
+                          </div>
                         </div>
                       <% end %>
                       <% request_body = attempt.decrypted_request_body %>
@@ -182,11 +184,13 @@
                               </button>
                             </div>
                           </div>
-                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
-                            JSON.pretty_generate(JSON.parse(request_body))
-                          rescue
-                            request_body.truncate(2000)
-                          end %></pre>
+                          <div class="mt-1 max-h-48 overflow-y-auto">
+                            <%= begin
+                              highlight_code(JSON.pretty_generate(JSON.parse(request_body)), language: "json")
+                            rescue
+                              highlight_code(request_body.truncate(2000))
+                            end %>
+                          </div>
                         </div>
                       <% end %>
                     </div>
@@ -219,7 +223,9 @@
                               </button>
                             </div>
                           </div>
-                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %></pre>
+                          <div class="mt-1 max-h-32 overflow-y-auto">
+                            <%= highlight_code(JSON.pretty_generate(attempt.response_headers), language: "json") rescue highlight_code(attempt.response_headers.to_s) %>
+                          </div>
                         </div>
                       <% end %>
                       <% response_body = attempt.decrypted_response_body %>
@@ -237,16 +243,20 @@
                               </button>
                             </div>
                           </div>
-                          <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
-                            JSON.pretty_generate(JSON.parse(response_body))
-                          rescue
-                            response_body.truncate(2000)
-                          end %></pre>
+                          <div class="mt-1 max-h-48 overflow-y-auto">
+                            <%= begin
+                              highlight_code(JSON.pretty_generate(JSON.parse(response_body)), language: "json")
+                            rescue
+                              highlight_code(response_body.truncate(2000))
+                            end %>
+                          </div>
                         </div>
                         <% if html_response?(response_body) %>
                           <div class="mt-2">
                             <strong>Cleaned Response:</strong>
-                            <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= cleaned_response_body(response_body).truncate(2000) %></pre>
+                            <div class="mt-1 max-h-48 overflow-y-auto">
+                              <%= highlight_code(cleaned_response_body(response_body).truncate(2000)) %>
+                            </div>
                           </div>
                         <% end %>
                       <% end %>
