@@ -25,7 +25,7 @@ gem "openssl", "~> 3.3"
 gem "tzinfo-data", "~> 2.0", platforms: %i[ windows jruby ]
 
 # Authentication [https://github.com/heartcombo/devise]
-gem "devise", "~> 4.9"
+gem "devise", "~> 5.0"
 
 # Background job processing [https://github.com/sidekiq/sidekiq]
 gem "sidekiq", "~> 8.0"
