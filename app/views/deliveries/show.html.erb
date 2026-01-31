@@ -152,14 +152,36 @@
                       <p><strong>Method:</strong> <span class="badge badge-outline"><%= attempt.request_method %></span></p>
                       <% if attempt.request_headers.present? && attempt.request_headers.any? %>
                         <div>
-                          <strong>Headers:</strong>
+                          <div class="flex items-center gap-2">
+                            <strong>Headers:</strong>
+                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                              <input type="hidden" value="<%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %>" data-clipboard-target="source">
+                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy headers">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy
+                              </button>
+                            </div>
+                          </div>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.request_headers) rescue attempt.request_headers.to_s %></pre>
                         </div>
                       <% end %>
                       <% request_body = attempt.decrypted_request_body %>
                       <% if request_body.present? %>
                         <div>
-                          <strong>Body:</strong>
+                          <div class="flex items-center gap-2">
+                            <strong>Body:</strong>
+                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                              <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(request_body)) rescue request_body end %>" data-clipboard-target="source">
+                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy body">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy
+                              </button>
+                            </div>
+                          </div>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
                             JSON.pretty_generate(JSON.parse(request_body))
                           rescue
@@ -185,14 +207,36 @@
                       <% end %>
                       <% if attempt.response_headers.present? && attempt.response_headers.any? %>
                         <div>
-                          <strong>Headers:</strong>
+                          <div class="flex items-center gap-2">
+                            <strong>Headers:</strong>
+                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                              <input type="hidden" value="<%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %>" data-clipboard-target="source">
+                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy headers">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy
+                              </button>
+                            </div>
+                          </div>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-32"><%= JSON.pretty_generate(attempt.response_headers) rescue attempt.response_headers.to_s %></pre>
                         </div>
                       <% end %>
                       <% response_body = attempt.decrypted_response_body %>
                       <% if response_body.present? %>
                         <div>
-                          <strong>Body:</strong>
+                          <div class="flex items-center gap-2">
+                            <strong>Body:</strong>
+                            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!" class="inline-block">
+                              <input type="hidden" value="<%= begin JSON.pretty_generate(JSON.parse(response_body)) rescue response_body end %>" data-clipboard-target="source">
+                              <button type="button" data-action="clipboard#copy" data-clipboard-target="button" class="btn btn-outline btn-primary btn-xs" title="Copy body">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                                </svg>
+                                Copy
+                              </button>
+                            </div>
+                          </div>
                           <pre class="bg-base-300 p-2 rounded text-xs overflow-x-auto mt-1 max-h-48"><%= begin
                             JSON.pretty_generate(JSON.parse(response_body))
                           rescue
