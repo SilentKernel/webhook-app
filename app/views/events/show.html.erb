@@ -166,25 +166,23 @@
 
   <div class="card bg-base-100 shadow-xl">
     <div class="card-body">
-      <h2 class="card-title">Payload</h2>
+      <div class="flex justify-between items-center">
+        <h2 class="card-title">Payload</h2>
+        <% if @event.decrypted_raw_body.present? %>
+          <div data-controller="clipboard" data-clipboard-success-content-value="Copied!">
+            <input type="hidden" value="<%= @event.parsed_body ? JSON.pretty_generate(@event.parsed_body) : @event.decrypted_raw_body %>" data-clipboard-target="source">
+            <button type="button" data-action="click->clipboard#copy" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy payload">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2H10a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+            </button>
+          </div>
+        <% end %>
+      </div>
       <% if @event.decrypted_raw_body.present? %>
-        <div tabindex="0" class="collapse bg-base-200">
-          <input type="checkbox" checked />
-          <div class="collapse-title font-medium flex justify-between items-center pr-4">
-            <span>View payload</span>
-            <div data-controller="clipboard" data-clipboard-success-content-value="Copied!">
-              <input type="hidden" value="<%= @event.parsed_body ? JSON.pretty_generate(@event.parsed_body) : @event.decrypted_raw_body %>" data-clipboard-target="source">
-              <button type="button" data-action="click->clipboard#copy:stop" data-clipboard-target="button" class="btn btn-ghost btn-xs" title="Copy payload">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                </svg>
-              </button>
-            </div>
-          </div>
-          <div class="collapse-content max-h-96 overflow-y-auto">
-            <% parsed = @event.parsed_body %>
-            <%= parsed ? highlight_code(JSON.pretty_generate(parsed), language: "json") : highlight_code(@event.displayable_body) %>
-          </div>
+        <div class="bg-base-200 rounded-lg max-h-96 overflow-y-auto">
+          <% parsed = @event.parsed_body %>
+          <%= parsed ? highlight_code(JSON.pretty_generate(parsed), language: "json") : highlight_code(@event.displayable_body) %>
         </div>
       <% else %>
         <p class="text-base-content/60">No payload recorded.</p>
