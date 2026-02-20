@@ -3,7 +3,7 @@ set -euo pipefail
 
 REGISTRY="registry.developpeur-freelance.io"
 IMAGE_NAME="silent/hoostack"
-COMPOSE_FILE="docker-compose.prod.yml"
+COMPOSE_FILE="docker-compose.yml"
 
 IMAGE_TAG="${1:-}"
 
