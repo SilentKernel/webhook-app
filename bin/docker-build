@@ -4,19 +4,19 @@ set -euo pipefail
 REGISTRY="registry.developpeur-freelance.io"
 IMAGE_NAME="silent/hoostack"
 COMMIT_SHA="$(git rev-parse --short HEAD)"
-
 FULL_IMAGE="${REGISTRY}/${IMAGE_NAME}:${COMMIT_SHA}"
 
-echo "Building ${FULL_IMAGE}..."
+echo ""
+echo "  Image:  ${FULL_IMAGE}"
+echo "  Commit: $(git log -1 --format='%h %s')"
+echo ""
+
+echo "==> Building..."
 docker build --platform linux/amd64 -t "$FULL_IMAGE" .
 
+echo "==> Pushing..."
+docker push "$FULL_IMAGE"
+
 echo ""
-echo "Build complete: ${FULL_IMAGE}"
+echo "==> Done. Tag to deploy: ${COMMIT_SHA}"
 echo ""
-read -rp "Push to registry? [y/N] " answer
-if [[ "$answer" =~ ^[Yy]$ ]]; then
-  docker push "$FULL_IMAGE"
-  echo "Pushed ${FULL_IMAGE}"
-else
-  echo "Skipped push. Run manually: docker push ${FULL_IMAGE}"
-fi
