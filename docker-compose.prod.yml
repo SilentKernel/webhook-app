@@ -1,0 +1,79 @@
+services:
+  app:
+    image: registry.developpeur-freelance.io/silent/hoostack:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "1"
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/hookstack_production
+      REDIS_URL: redis://redis:6379/0
+      VIRTUAL_HOST: app.hookstack.io,hookstack.ludovic-frank.fr
+      VIRTUAL_PORT: "80"
+      LETSENCRYPT_HOST: app.hookstack.io,hookstack.ludovic-frank.fr
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:80/up || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+    networks:
+      - nginx-proxy
+      - internal
+
+  worker:
+    image: registry.developpeur-freelance.io/silent/hoostack:${IMAGE_TAG:-latest}
+    restart: unless-stopped
+    command: bundle exec sidekiq
+    env_file: .env
+    environment:
+      RAILS_ENV: production
+      RAILS_LOG_TO_STDOUT: "1"
+      DATABASE_URL: postgres://postgres:${POSTGRES_PASSWORD}@postgres:5432/hookstack_production
+      REDIS_URL: redis://redis:6379/0
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - internal
+
+  postgres:
+    image: postgres:17
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: hookstack_production
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+  redis:
+    image: redis:8
+    restart: unless-stopped
+    volumes:
+      - ./redis:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - internal
+
+networks:
+  nginx-proxy:
+    external: true
+  internal:
