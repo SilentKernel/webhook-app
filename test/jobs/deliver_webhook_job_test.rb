@@ -687,6 +687,68 @@ class DeliverWebhookJobTest < ActiveJob::TestCase
     assert_nil attempt.request_headers["X-Custom-Header"]
   end
 
+  # Query parameter forwarding tests
+
+  test "forwards query parameters from event to destination URL" do
+    event = @delivery.event
+    event.update!(query_params: { "foo" => "bar", "baz" => "qux" })
+
+    expected_url = "#{@destination.url}?foo=bar&baz=qux"
+    stub_request(:post, expected_url)
+      .to_return(status: 200, body: "OK")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+    assert_requested :post, expected_url
+  end
+
+  test "merges query params with existing destination URL query params" do
+    @destination.update!(url: "https://example.com/hook?existing=1")
+    event = @delivery.event
+    event.update!(query_params: { "foo" => "bar" })
+
+    expected_url = "https://example.com/hook?existing=1&foo=bar"
+    stub_request(:post, expected_url)
+      .to_return(status: 200, body: "OK")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+    assert_requested :post, expected_url
+  end
+
+  test "does not modify URL when event has no query params" do
+    event = @delivery.event
+    event.update!(query_params: {})
+
+    stub_request(:post, @destination.url)
+      .to_return(status: 200, body: "OK")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    assert_equal "success", @delivery.status
+    assert_requested :post, @destination.url
+  end
+
+  test "records full URL with query params in delivery attempt" do
+    event = @delivery.event
+    event.update!(query_params: { "token" => "abc123" })
+
+    expected_url = "#{@destination.url}?token=abc123"
+    stub_request(:post, expected_url)
+      .to_return(status: 200, body: "OK")
+
+    DeliverWebhookJob.perform_now(@delivery.id)
+
+    @delivery.reload
+    attempt = @delivery.delivery_attempts.last
+    assert_equal expected_url, attempt.request_url
+  end
+
   test "source type default headers use case-insensitive matching" do
     source = sources(:stripe_production)
 

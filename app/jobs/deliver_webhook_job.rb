@@ -39,13 +39,15 @@ class DeliverWebhookJob < ApplicationJob
     started_at = Time.current
     request_body = request_body_for(event)
 
+    url = delivery_url(event, destination)
+
     begin
       response = make_request(event, destination, connection)
 
       delivery.delivery_attempts.create!(
         attempt_number: attempt_number,
         status: response.success? ? :success : :failed,
-        request_url: destination.url,
+        request_url: url,
         request_method: destination.http_method,
         request_headers: sanitize_headers_for_storage(build_request_headers(event, destination, connection)),
         request_body: truncate_body(request_body),
@@ -59,7 +61,7 @@ class DeliverWebhookJob < ApplicationJob
       delivery.delivery_attempts.create!(
         attempt_number: attempt_number,
         status: :failed,
-        request_url: destination.url,
+        request_url: url,
         request_method: destination.http_method,
         request_headers: sanitize_headers_for_storage(build_request_headers(event, destination, connection)),
         request_body: truncate_body(request_body),
@@ -82,21 +84,32 @@ class DeliverWebhookJob < ApplicationJob
 
     headers = build_request_headers(event, destination, connection)
     body = request_body_for(event)
+    url = delivery_url(event, destination)
 
     case destination.http_method.upcase
     when "POST"
-      conn.post(destination.url, body, headers)
+      conn.post(url, body, headers)
     when "PUT"
-      conn.put(destination.url, body, headers)
+      conn.put(url, body, headers)
     when "PATCH"
-      conn.patch(destination.url, body, headers)
+      conn.patch(url, body, headers)
     when "GET"
-      conn.get(destination.url, nil, headers)
+      conn.get(url, nil, headers)
     when "DELETE"
-      conn.delete(destination.url, nil, headers)
+      conn.delete(url, nil, headers)
     else
-      conn.post(destination.url, body, headers)
+      conn.post(url, body, headers)
     end
+  end
+
+  def delivery_url(event, destination)
+    return destination.url if event.query_params.blank?
+
+    uri = URI.parse(destination.url)
+    existing_params = URI.decode_www_form(uri.query || "")
+    new_params = event.query_params.to_a
+    uri.query = URI.encode_www_form(existing_params + new_params)
+    uri.to_s
   end
 
   def request_body_for(event)
