@@ -82,7 +82,7 @@ gem "redis", "~> 5.0"
 
 # Pin connection_pool to v2.x to fix Rails 8.1.1 incompatibility with v3
 # See: https://github.com/rails/rails/issues/56461
-gem "connection_pool", "~> 2.4"
+gem "connection_pool", "~> 3.0"
 
 # HTTP client for webhook delivery
 gem "faraday", "~> 2.14"
