@@ -31,7 +31,7 @@ gem "devise", "~> 4.9"
 gem "sidekiq", "~> 8.0"
 
 # Reduces boot times through caching; required in config/boot.rb
-gem "bootsnap", "~> 1.20", require: false
+gem "bootsnap", "~> 1.22", require: false
 
 # Deploy this application anywhere as a Docker container [https://kamal-deploy.org]
 gem "kamal", "~> 2.10", require: false
