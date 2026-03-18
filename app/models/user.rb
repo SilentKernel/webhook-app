@@ -17,7 +17,11 @@ class User < ApplicationRecord
     "#{first_name} #{last_name}"
   end
 
+  BLOCKED_FAILURE_EMAIL_ADDRESSES = %w[simon@normadev.fr].freeze
+
   def can_receive_failure_email?
+    return false if BLOCKED_FAILURE_EMAIL_ADDRESSES.include?(email)
+
     confirmed? && (last_failure_email_sent_at.nil? || last_failure_email_sent_at < 10.minutes.ago)
   end
 end

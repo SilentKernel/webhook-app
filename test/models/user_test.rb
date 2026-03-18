@@ -120,6 +120,14 @@ class UserTest < ActiveSupport::TestCase
     assert_not user.can_receive_failure_email?
   end
 
+  test "can_receive_failure_email? returns false for blocked email address" do
+    user = users(:owner)
+    user.email = "simon@normadev.fr"
+    user.last_failure_email_sent_at = nil
+
+    assert_not user.can_receive_failure_email?
+  end
+
   test "can_receive_failure_email? returns true exactly at 10 minute boundary" do
     user = users(:owner)
     user.last_failure_email_sent_at = 10.minutes.ago - 1.second
